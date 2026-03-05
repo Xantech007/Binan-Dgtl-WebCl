@@ -211,6 +211,14 @@ display:block;
 display:inline-block;
 }
 
+.dashboard-actions a{
+text-decoration:none;
+color:inherit;
+}
+
+.icon-circle i{
+color:#fff;
+}
     
 /* ================= SMOOTH SLIDER ================= */
 
