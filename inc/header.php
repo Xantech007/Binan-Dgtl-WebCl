@@ -183,9 +183,11 @@ body{
 }
 
 .action-item{
-    text-decoration:none;
-    color:#fff;
-    flex:1;
+text-decoration:none;
+color:white;
+text-align:center;
+flex:1;
+display:block;
 }
 
 .icon-circle{
