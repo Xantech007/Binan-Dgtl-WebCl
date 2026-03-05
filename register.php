@@ -74,7 +74,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             font-family: Arial, sans-serif;
         }
 
-        /* Key fix: full viewport width wrapper prevents scrollbar-induced shift */
+        /* Prevent layout shift from scrollbar */
         .viewport-wrapper {
             width: 100vw;
             min-height: 100vh;
@@ -94,11 +94,12 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             border-radius: 20px;
             padding: 60px 55px;
             position: relative;
-            overflow: hidden;
+            overflow: visible;          /* changed from hidden */
             box-shadow: 0 0 40px rgba(0,0,0,.6);
+            z-index: 1;
         }
 
-        /* Floating background image */
+        /* Floating background - make it non-interactive */
         .bg {
             position: absolute;
             right: -50px;
@@ -106,6 +107,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             width: 360px;
             opacity: .25;
             animation: float 4s ease-in-out infinite;
+            pointer-events: none;       /* ← prevents blocking clicks */
+            z-index: 0;
         }
 
         @keyframes float {
@@ -180,6 +183,9 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             font-size: 17px;
             cursor: pointer;
             margin-top: 10px;
+            position: relative;
+            z-index: 2;
+            touch-action: manipulation;     /* improves mobile tap response */
         }
 
         .signup {
@@ -206,7 +212,18 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
             margin-top: 10px;
         }
 
-        /* Optional: reserve scrollbar space (good modern fallback) */
+        /* Bigger tap targets on small screens */
+        @media (max-width: 480px) {
+            .btn {
+                padding: 18px 16px;
+                font-size: 17px;
+            }
+            .input {
+                padding: 18px;
+            }
+        }
+
+        /* Optional modern scrollbar handling */
         @supports (scrollbar-gutter: stable) {
             html {
                 scrollbar-gutter: stable;
@@ -219,7 +236,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
 <div class="viewport-wrapper">
     <div class="wrapper">
         <div class="box">
-            <img src="assets/images/wallet.png" class="bg" alt="">
+            <img src="assets/images/wallet.png" class="bg" alt="background decoration">
+
             <img src="assets/images/logo.webp" class="logo" alt="Logo">
 
             <div class="title">Create Account</div>
@@ -234,22 +252,22 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 <input type="hidden" name="type" value="email">
                 <div class="input">
                     <i class="fa fa-envelope"></i>
-                    <input type="email" name="email" placeholder="Email" required>
+                    <input type="email" name="email" placeholder="Email" required autocomplete="email">
                 </div>
                 <div class="input">
                     <i class="fa fa-lock"></i>
-                    <input type="password" name="password" placeholder="Password" required>
+                    <input type="password" name="password" placeholder="Password" required autocomplete="new-password">
                 </div>
                 <div class="input">
                     <i class="fa fa-lock"></i>
-                    <input type="password" name="confirm" placeholder="Re-enter Password" required>
+                    <input type="password" name="confirm" placeholder="Re-enter Password" required autocomplete="new-password">
                 </div>
                 <div class="input">
                     <i class="fa fa-thumbs-up"></i>
-                    <input type="text" name="invite" placeholder="Invitation Code">
+                    <input type="text" name="invite" placeholder="Invitation Code" autocomplete="off">
                 </div>
                 <button type="submit" class="btn signup">Sign Up</button>
-                <button type="button" class="btn signin" onclick="location='login.php'">Sign In</button>
+                <button type="button" class="btn signin" onclick="location.href='login.php'">Sign In</button>
             </form>
 
             <!-- PHONE REGISTER -->
@@ -257,22 +275,22 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
                 <input type="hidden" name="type" value="phone">
                 <div class="input">
                     <i class="fa fa-phone"></i>
-                    <input type="text" name="phone" placeholder="Phone Number" required>
+                    <input type="tel" name="phone" placeholder="Phone Number" required autocomplete="tel">
                 </div>
                 <div class="input">
                     <i class="fa fa-lock"></i>
-                    <input type="password" name="password" placeholder="Password" required>
+                    <input type="password" name="password" placeholder="Password" required autocomplete="new-password">
                 </div>
                 <div class="input">
                     <i class="fa fa-lock"></i>
-                    <input type="password" name="confirm" placeholder="Re-enter Password" required>
+                    <input type="password" name="confirm" placeholder="Re-enter Password" required autocomplete="new-password">
                 </div>
                 <div class="input">
                     <i class="fa fa-thumbs-up"></i>
-                    <input type="text" name="invite" placeholder="Invitation Code">
+                    <input type="text" name="invite" placeholder="Invitation Code" autocomplete="off">
                 </div>
                 <button type="submit" class="btn signup">Sign Up</button>
-                <button type="button" class="btn signin" onclick="location='login.php'">Sign In</button>
+                <button type="button" class="btn signin" onclick="location.href='login.php'">Sign In</button>
             </form>
 
             <?php if($msg): ?>
