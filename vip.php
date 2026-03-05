@@ -87,7 +87,7 @@ $vipQuery = $pdo->query("SELECT * FROM vip WHERE status=1 ORDER BY id ASC");
 
 <div class="vip-left">
 
-<img src="assets/images/vip.jpg">
+<img src="assets/images/logo-vip.png">
 
 </div>
 
