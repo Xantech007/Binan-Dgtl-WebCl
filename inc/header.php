@@ -1013,7 +1013,80 @@ background:#fff;
 padding:10px;
 }
 
-    
+ /* MISSION PAGE */
+
+.task-reset-box{
+margin:20px;
+border:1px solid #f0b24b;
+padding:12px;
+border-radius:10px;
+color:white;
+display:flex;
+align-items:center;
+gap:8px;
+}
+
+.task-reset-box strong{
+margin-left:auto;
+color:#f0b24b;
+font-size:16px;
+}
+
+.task-stats{
+margin:20px;
+background:linear-gradient(135deg,#3a2b20,#5a402e);
+padding:15px;
+border-radius:12px;
+display:flex;
+justify-content:space-between;
+color:white;
+}
+
+.task-stats div{
+text-align:center;
+}
+
+.task-panel{
+margin:20px;
+background:linear-gradient(135deg,#3a2b20,#5a402e);
+border-radius:12px;
+padding:15px;
+color:white;
+}
+
+.task-tabs{
+display:flex;
+justify-content:space-between;
+margin-bottom:20px;
+}
+
+.tab{
+cursor:pointer;
+padding-bottom:5px;
+}
+
+.tab.active{
+border-bottom:2px solid white;
+}
+
+.task-content{
+display:none;
+text-align:center;
+padding:40px 0;
+}
+
+.task-content.active{
+display:block;
+}
+
+.no-data{
+opacity:.7;
+}
+
+.no-data i{
+font-size:40px;
+margin-bottom:10px;
+}   
     
 </style>
 </head>
