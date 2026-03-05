@@ -139,35 +139,37 @@ $team_withdraw = $stmt->fetchColumn() ?? 0;
 
 <div class="team-level level1">
 
-<div class="level-left">
-<img src="assets/images/medal.png">
-<span>LEVEL 1</span>
-</div>
+    <div class="level-badge">
+        <img src="assets/images/medal.png">
+        <span>LEVEL 1</span>
+    </div>
 
-<div class="level-center">
+    <div class="level-panel">
 
-<div>
-Register/Valid
-<strong>0/0</strong>
-</div>
+        <div class="level-stats">
 
-<div>
-Total Income
-<strong>0</strong>
-</div>
+            <div>
+                <p>Register/Valid</p>
+                <strong>0/0</strong>
+            </div>
 
-</div>
+            <div>
+                <p>Total Income</p>
+                <strong>0</strong>
+            </div>
 
-<div class="level-right">
+        </div>
 
-<div>
-Commission Percentage
-<strong>16%</strong>
-</div>
+        <div class="level-commission">
 
-<a href="team/1.php" class="detail-btn">Details</a>
+            <p>Commission Percentage</p>
+            <strong>16%</strong>
 
-</div>
+        </div>
+
+    </div>
+
+    <a href="team/1.php" class="detail-btn">Details</a>
 
 </div>
 
@@ -177,35 +179,37 @@ Commission Percentage
 
 <div class="team-level level2">
 
-<div class="level-left">
-<img src="assets/images/medal.png">
-<span>LEVEL 2</span>
-</div>
+    <div class="level-badge">
+        <img src="assets/images/medal.png">
+        <span>LEVEL 2</span>
+    </div>
 
-<div class="level-center">
+    <div class="level-panel">
 
-<div>
-Register/Valid
-<strong>0/0</strong>
-</div>
+        <div class="level-stats">
 
-<div>
-Total Income
-<strong>0</strong>
-</div>
+            <div>
+                <p>Register/Valid</p>
+                <strong>0/0</strong>
+            </div>
 
-</div>
+            <div>
+                <p>Total Income</p>
+                <strong>0</strong>
+            </div>
 
-<div class="level-right">
+        </div>
 
-<div>
-Commission Percentage
-<strong>3%</strong>
-</div>
+        <div class="level-commission">
 
-<a href="team/2.php" class="detail-btn">Details</a>
+            <p>Commission Percentage</p>
+            <strong>3%</strong>
 
-</div>
+        </div>
+
+    </div>
+
+    <a href="team/2.php" class="detail-btn">Details</a>
 
 </div>
 
@@ -215,42 +219,39 @@ Commission Percentage
 
 <div class="team-level level3">
 
-<div class="level-left">
-<img src="assets/images/medal.png">
-<span>LEVEL 3</span>
-</div>
+    <div class="level-badge">
+        <img src="assets/images/medal.png">
+        <span>LEVEL 3</span>
+    </div>
 
-<div class="level-center">
+    <div class="level-panel">
 
-<div>
-Register/Valid
-<strong>0/0</strong>
-</div>
+        <div class="level-stats">
 
-<div>
-Total Income
-<strong>0</strong>
-</div>
+            <div>
+                <p>Register/Valid</p>
+                <strong>0/0</strong>
+            </div>
 
-</div>
+            <div>
+                <p>Total Income</p>
+                <strong>0</strong>
+            </div>
 
-<div class="level-right">
+        </div>
 
-<div>
-Commission Percentage
-<strong>1%</strong>
-</div>
+        <div class="level-commission">
 
-<a href="team/3.php" class="detail-btn">Details</a>
+            <p>Commission Percentage</p>
+            <strong>1%</strong>
 
-</div>
+        </div>
 
-</div>
+    </div>
 
-
+    <a href="team/3.php" class="detail-btn">Details</a>
 
 </div>
-
 
 
 <script>
