@@ -772,7 +772,7 @@ text-align:center;
 font-size:14px;
 }
 
-/* WITHDRAW */
+/* ================= WITHDRAW ================= */
 
 .withdraw-header{
 display:flex;
@@ -785,7 +785,16 @@ color:white;
 .withdraw-header span{
 flex:1;
 text-align:center;
+font-weight:500;
 }
+
+.withdraw-header a{
+color:#fff;
+text-decoration:none;
+font-size:18px;
+}
+
+/* MAIN CONTAINER */
 
 .withdraw-container{
 margin:20px;
@@ -795,12 +804,23 @@ border-radius:15px;
 color:white;
 }
 
+/* BALANCE BOX */
+
 .withdraw-balance{
 background:#2b2b2b;
 padding:15px;
 border-radius:10px;
 margin-bottom:15px;
+font-size:14px;
 }
+
+.withdraw-balance strong{
+display:block;
+margin-top:5px;
+font-size:18px;
+}
+
+/* WITHDRAW METHODS */
 
 .withdraw-methods{
 display:flex;
@@ -810,51 +830,6 @@ margin-bottom:15px;
 }
 
 .method{
-background:#2b2b2b;
-padding:8px 12px;
-border-radius:8px;
-cursor:pointer;
-}
-
-.withdraw-input{
-width:100%;
-padding:12px;
-margin-bottom:12px;
-border-radius:10px;
-border:none;
-background:#222;
-color:white;
-}
-
-.withdraw-summary{
-margin:10px 0;
-display:flex;
-justify-content:space-between;
-}
-
-.withdraw-btn{
-width:100%;
-padding:14px;
-background:#f0b24b;
-border:none;
-border-radius:25px;
-font-size:16px;
-cursor:pointer;
-}
-
-.withdraw-info{
-margin-top:15px;
-font-size:12px;
-opacity:.8;
-}
-
-.withdraw-msg{
-margin-top:10px;
-color:#4CAF50;
-text-align:center;
-}
-    
-.method{
 display:flex;
 align-items:center;
 gap:8px;
@@ -862,6 +837,7 @@ background:#2b2b2b;
 padding:8px 12px;
 border-radius:8px;
 cursor:pointer;
+font-size:13px;
 }
 
 .method input{
@@ -874,16 +850,59 @@ height:20px;
 object-fit:contain;
 }
 
+/* SELECTED METHOD */
+
 .method input:checked + img{
 border:2px solid #f0b24b;
 border-radius:6px;
 }
 
-.withdraw-header a{
-color:#fff;
-text-decoration:none;
-font-size:18px;
+/* INPUTS */
+
+.withdraw-input{
+width:100%;
+padding:12px;
+margin-bottom:12px;
+border-radius:10px;
+border:none;
+background:#222;
+color:white;
+font-size:14px;
 }
+
+/* SUMMARY */
+
+.withdraw-summary{
+margin:10px 0;
+display:flex;
+justify-content:space-between;
+font-size:14px;
+}
+
+/* BUTTON */
+
+.withdraw-btn{
+width:100%;
+padding:14px;
+background:#f0b24b;
+border:none;
+border-radius:25px;
+font-size:16px;
+cursor:pointer;
+color:#fff;
+font-weight:500;
+}
+
+/* INFO TEXT */
+
+.withdraw-info{
+margin-top:15px;
+font-size:12px;
+opacity:.8;
+line-height:1.5;
+}
+
+/* SUCCESS MESSAGE */
 
 .withdraw-success{
 margin:20px;
@@ -893,6 +912,38 @@ padding:15px;
 border-radius:10px;
 text-align:center;
 font-size:14px;
+}
+
+/* ERROR MESSAGE */
+
+.withdraw-error{
+margin-top:15px;
+background:#e74c3c;
+color:#fff;
+padding:12px;
+border-radius:8px;
+text-align:center;
+font-size:14px;
+}
+
+/* MOBILE OPTIMIZATION */
+
+@media(max-width:480px){
+
+.withdraw-container{
+margin:15px;
+padding:18px;
+}
+
+.method{
+font-size:12px;
+padding:6px 10px;
+}
+
+.withdraw-btn{
+font-size:15px;
+}
+
 }
     
 </style>
