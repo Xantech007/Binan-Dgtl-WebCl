@@ -101,24 +101,41 @@ $vipQuery = $pdo->query("SELECT * FROM vip WHERE status = 1 ORDER BY id ASC");
 <!-- ================= TASK HALL ================= -->
 
 <div class="task-section">
-    <h2 class="task-title">Task Hall</h2>
+<h2 class="task-title">Task Hall</h2>
 
-    <?php while($vip = $vipQuery->fetch(PDO::FETCH_ASSOC)): ?>
+<?php while($vip = $vipQuery->fetch(PDO::FETCH_ASSOC)): ?>
 
-    <div class="task-card">
+<a href="activate_vip.php?id=<?php echo $vip['id']; ?>" class="task-card">
 
-        <img src="assets/images/vip.jpg" class="task-left">
+<div class="task-left">
 
-        <div class="task-content">
-            <h3><?php echo htmlspecialchars($vip['name']); ?></h3>
-            <p>Amount: ₦<?php echo number_format($vip['amount'],2); ?></p>
-        </div>
+<img src="assets/images/vip.jpeg" class="vip-icon">
 
-        <img src="assets/images/arrow.jpeg" class="task-right">
+<?php if($user['vip_level'] < $vip['id']): ?>
+<i class="fa-solid fa-lock lock-overlay"></i>
+<?php endif; ?>
 
-    </div>
+</div>
 
-    <?php endwhile; ?>
+<div class="task-content">
+
+<div class="unlock-text">
+Unlock amount <span>$<?php echo number_format($vip['activation_fee'],2); ?></span>
+</div>
+
+<div class="vip-name">
+<?php echo htmlspecialchars($vip['name']); ?>
+</div>
+
+</div>
+
+<div class="task-arrow">
+<i class="fa-solid fa-angle-right"></i>
+</div>
+
+</a>
+
+<?php endwhile; ?>
 
 </div>
 
