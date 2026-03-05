@@ -100,28 +100,55 @@ $vipQuery = $pdo->query("SELECT * FROM vip WHERE status = 1 ORDER BY id ASC");
 
 <!-- ================= TASK HALL ================= -->
 
+<?php
+$vipQuery = $pdo->query("SELECT * FROM vip WHERE status = 1 ORDER BY id ASC");
+?>
+
 <div class="task-section">
-    <h2 class="task-title">Task Hall</h2>
+<h2 class="task-title">Task Hall</h2>
 
-    <?php while($vip = $vipQuery->fetch(PDO::FETCH_ASSOC)): ?>
+<?php while($vip = $vipQuery->fetch(PDO::FETCH_ASSOC)): ?>
 
-    <div class="task-card">
+<div class="task-card">
 
-        <img src="assets/images/vip.jpg" class="task-left">
+<img src="assets/images/vip.jpg" class="task-left">
 
-        <div class="task-content">
-            <h3><?php echo htmlspecialchars($vip['name']); ?></h3>
-            <p>Amount: ₦<?php echo number_format($vip['amount'],2); ?></p>
-        </div>
+<div class="task-content">
 
-        <img src="assets/images/arrow.jpeg" class="task-right">
+<h3><?php echo htmlspecialchars($vip['name']); ?></h3>
 
-    </div>
-
-    <?php endwhile; ?>
+<p>
+Mine rate - $<?php echo $vip['mine_rate']; ?> per minute  
+Earn $<?php echo $vip['daily_income']; ?> daily
+</p>
 
 </div>
 
+<div class="task-right">
+
+<?php if($user['vip_level'] < $vip['id']): ?>
+
+<i class="fa-solid fa-lock lock-icon"></i>
+
+<a href="activate_vip.php?id=<?php echo $vip['id']; ?>" class="vip-btn">
+Activation fee: $<?php echo $vip['activation_fee']; ?>
+</a>
+
+<?php else: ?>
+
+<a href="mine.php?vip=<?php echo $vip['id']; ?>" class="vip-active">
+Start Mining
+</a>
+
+<?php endif; ?>
+
+</div>
+
+</div>
+
+<?php endwhile; ?>
+
+</div>
 <!-- ================= MEMBER LIST ================= -->
 
 <div class="member-section">
