@@ -107,23 +107,8 @@ VIP<?php echo $vip['id']; ?>
 
 </div>
 
-<div class="vip-action">
-
-<?php if($current_vip >= $vip['id']): ?>
-
-<button class="vip-active">Activated</button>
-
-<?php else: ?>
-
-<button onclick="openPopup(<?php echo $vip['id']; ?>)">
-<?php echo number_format($vip['activation_fee'],2); ?> USDT Unlock now
-</button>
-
-<?php endif; ?>
-
 </div>
 
-</div>
 <div class="vip-action">
 
 <?php if($current_vip >= $vip['id']): ?>
