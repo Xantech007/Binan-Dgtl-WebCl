@@ -29,7 +29,6 @@ if($type=="email"){
 
 $email=trim($_POST['email']);
 
-/* check if email exists */
 $check=$pdo->prepare("SELECT id FROM users WHERE email=?");
 $check->execute([$email]);
 
@@ -51,7 +50,6 @@ exit;
 
 $phone=trim($_POST['phone']);
 
-/* check if phone exists */
 $check=$pdo->prepare("SELECT id FROM users WHERE phone=?");
 $check->execute([$phone]);
 
@@ -76,6 +74,7 @@ exit;
 <!DOCTYPE html>
 <html>
 <head>
+
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
 <link rel="stylesheet"
@@ -95,28 +94,31 @@ align-items:center;
 min-height:100vh;
 }
 
-/* BIG LAYOUT */
+/* ===== CENTER FIXED LAYOUT ===== */
+
 .wrapper{
 width:100%;
-max-width:650px;
-padding:40px;
+max-width:720px;
+padding:40px 20px;
+margin:auto;
 }
 
 .box{
 background:#14161c;
 border-radius:20px;
-padding:60px 45px;
+padding:60px 55px;
 position:relative;
 overflow:hidden;
 box-shadow:0 0 40px rgba(0,0,0,.6);
 }
 
 /* FLOAT IMAGE */
+
 .bg{
 position:absolute;
-right:-40px;
-bottom:-20px;
-width:340px;
+right:-50px;
+bottom:-30px;
+width:360px;
 opacity:.25;
 animation:float 4s ease-in-out infinite;
 }
@@ -127,6 +129,7 @@ animation:float 4s ease-in-out infinite;
 }
 
 /* LOGO */
+
 .logo{
 width:110px;
 height:110px;
@@ -144,6 +147,7 @@ margin:15px 0 30px;
 }
 
 /* TABS */
+
 .tabs{
 display:flex;
 margin-bottom:25px;
@@ -164,11 +168,12 @@ border-color:#fff;
 }
 
 /* INPUT */
+
 .input{
 display:flex;
 align-items:center;
 background:rgba(240,178,75,.25);
-padding:15px;
+padding:16px;
 border-radius:10px;
 margin-bottom:18px;
 backdrop-filter:blur(6px);
@@ -188,7 +193,8 @@ flex:1;
 font-size:16px;
 }
 
-/* BUTTON */
+/* BUTTONS */
+
 .btn{
 width:100%;
 padding:16px;
@@ -196,12 +202,21 @@ border:none;
 border-radius:30px;
 font-size:17px;
 cursor:pointer;
-background:#f0b24b;
-color:#fff;
 margin-top:10px;
 }
 
+.signup{
+background:#f0b24b;
+color:#fff;
+}
+
+.signin{
+background:#2b2b2b;
+color:#fff;
+}
+
 /* FORMS */
+
 .form{
 display:none;
 }
@@ -217,6 +232,7 @@ margin-top:10px;
 }
 
 </style>
+
 </head>
 
 <body>
@@ -230,6 +246,7 @@ margin-top:10px;
 <div class="title">Create Account</div>
 
 <div class="tabs">
+
 <div class="active" onclick="switchTab(event,'emailForm')">
 Email Sign Up
 </div>
@@ -237,9 +254,11 @@ Email Sign Up
 <div onclick="switchTab(event,'phoneForm')">
 Phone Sign Up
 </div>
+
 </div>
 
 <!-- EMAIL REGISTER -->
+
 <form method="POST"
 id="emailForm"
 class="form active">
@@ -277,12 +296,19 @@ name="invite"
 placeholder="Invitation Code">
 </div>
 
-<button class="btn">Sign Up</button>
+<button class="btn signup">Sign Up</button>
+
+<button type="button"
+class="btn signin"
+onclick="location='login.php'">
+Sign In
+</button>
 
 </form>
 
 
 <!-- PHONE REGISTER -->
+
 <form method="POST"
 id="phoneForm"
 class="form">
@@ -320,7 +346,13 @@ name="invite"
 placeholder="Invitation Code">
 </div>
 
-<button class="btn">Sign Up</button>
+<button class="btn signup">Sign Up</button>
+
+<button type="button"
+class="btn signin"
+onclick="location='login.php'">
+Sign In
+</button>
 
 </form>
 
@@ -332,6 +364,7 @@ placeholder="Invitation Code">
 </div>
 
 <script>
+
 function switchTab(event,id){
 
 document.querySelectorAll('.form')
@@ -344,7 +377,9 @@ document.querySelectorAll('.tabs div')
 .forEach(t=>t.classList.remove('active'));
 
 event.target.classList.add('active');
+
 }
+
 </script>
 
 </body>
