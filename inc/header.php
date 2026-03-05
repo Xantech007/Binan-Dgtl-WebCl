@@ -206,6 +206,12 @@ display:block;
 .action-item span{
     font-size:13px;
 }
+
+.dashboard-actions a{
+display:inline-block;
+}
+
+    
 /* ================= SMOOTH SLIDER ================= */
 
 .banner-slider{
