@@ -92,30 +92,25 @@ $vipQuery = $pdo->query("SELECT * FROM vip WHERE status=1 ORDER BY id ASC");
 </div>
 
 
-<div class="vip-info">
+<div class="vip-details">
 
-<div>
-<span>Daily tasks</span>
-<strong><?php echo $vip['daily_tasks']; ?></strong>
+<div class="label">Daily tasks</div>
+<div class="value">1</div>
+
+<div class="label">Simple interest</div>
+<div class="value green">3.00</div>
+
+<div class="label">Daily profit</div>
+<div class="value">
+3.00 <span class="usdt">USDT</span>
 </div>
 
-<div>
-<span>Simple interest</span>
-<strong class="green"><?php echo $vip['simple_interest']; ?></strong>
-</div>
-
-<div>
-<span>Daily profit</span>
-<strong><?php echo number_format($vip['daily_profit'],2); ?> USDT</strong>
-</div>
-
-<div>
-<span>The total profit</span>
-<strong><?php echo number_format($vip['total_profit'],2); ?> USDT</strong>
+<div class="label">The total profit</div>
+<div class="value">
+270.00 <span class="usdt">USDT</span>
 </div>
 
 </div>
-
 
 <div class="vip-action">
 
