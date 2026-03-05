@@ -1731,20 +1731,37 @@ color:#fff;
 }
 
 
-/* TOP SECTION */
+/* ================= TOP SECTION ================= */
 
 .mine-top{
 display:flex;
-justify-content:space-between;
 align-items:center;
-margin-bottom:20px;
+justify-content:space-between;
+margin-bottom:18px;
+}
+
+
+/* USER INFO */
+
+.mine-user{
+flex:1;
+min-width:0;
 }
 
 .mine-user h3{
 margin:0;
-font-size:16px;
+font-size:15px;
 font-weight:500;
+
+/* prevent long emails from pushing GIF */
+
+white-space:nowrap;
+overflow:hidden;
+text-overflow:ellipsis;
 }
+
+
+/* VIP BADGE */
 
 .vip-badge{
 background:#f0b24b;
@@ -1757,7 +1774,7 @@ margin-top:6px;
 }
 
 
-/* GIF BOX */
+/* ================= GIF ================= */
 
 .mine-gif{
 width:95px;
@@ -1765,27 +1782,22 @@ height:95px;
 display:flex;
 align-items:center;
 justify-content:center;
+margin-left:12px;
 }
-
-
-/* GIF IMAGE */
 
 .mine-gif img{
 width:95px;
 height:95px;
 object-fit:cover;
 border-radius:12px;
-}
 
-.mine-gif img{
-width:95px;
-height:95px;
-border-radius:12px;
+/* glow effect */
+
 box-shadow:0 0 20px rgba(0,255,170,0.35);
 }
 
 
-/* BALANCE PANEL */
+/* ================= BALANCE PANEL ================= */
 
 .mine-balance{
 background:linear-gradient(90deg,#e6cf9b,#e7b55f);
@@ -1793,8 +1805,16 @@ padding:20px;
 border-radius:12px;
 display:flex;
 justify-content:space-between;
+align-items:center;
 text-align:center;
 color:#000;
+}
+
+
+/* BALANCE ITEMS */
+
+.balance-item{
+flex:1;
 }
 
 .balance-item p{
@@ -1805,10 +1825,11 @@ font-size:12px;
 .balance-item h2{
 margin-top:6px;
 font-size:20px;
+font-weight:600;
 }
 
 
-/* MENU */
+/* ================= MENU ================= */
 
 .mine-menu{
 margin:20px;
@@ -1816,6 +1837,9 @@ background:#111;
 border-radius:12px;
 overflow:hidden;
 }
+
+
+/* MENU ITEM */
 
 .menu-item{
 display:flex;
@@ -1825,17 +1849,32 @@ padding:16px;
 color:#fff;
 text-decoration:none;
 border-bottom:1px solid #333;
+transition:background .2s ease;
 }
+
+.menu-item:last-child{
+border-bottom:none;
+}
+
+
+/* ICON */
+
+.menu-item i:first-child{
+width:28px;
+text-align:center;
+}
+
+
+/* TEXT */
 
 .menu-item span{
 flex:1;
 margin-left:12px;
+font-size:14px;
 }
 
-.menu-item i:first-child{
-width:30px;
-text-align:center;
-}
+
+/* HOVER EFFECT */
 
 .menu-item:hover{
 background:#1b1b1b;
