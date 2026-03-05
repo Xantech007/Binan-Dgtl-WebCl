@@ -90,5 +90,24 @@ window.addEventListener("resize", adjustSpacing);
 
 </script>
 
+<script>
+
+function googleTranslateElementInit() {
+
+new google.translate.TranslateElement(
+{
+pageLanguage:'en',
+includedLanguages:'en,es,fr,pt,ru,ar,zh-CN,hi',
+autoDisplay:false
+},
+'google_translate_element'
+);
+
+}
+
+</script>
+
+<script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
 </body>
 </html>
