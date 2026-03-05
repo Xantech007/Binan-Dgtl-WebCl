@@ -951,6 +951,69 @@ border:2px solid #f0b24b;
 box-shadow:0 0 8px #f0b24b;
 }
 
+/* COMPANY PAGE */
+
+.company-header{
+display:flex;
+align-items:center;
+padding:15px;
+background:linear-gradient(90deg,#2c1f16,#4a3324);
+color:white;
+}
+
+.company-header span{
+flex:1;
+text-align:center;
+font-weight:500;
+}
+
+.company-header a{
+color:#fff;
+text-decoration:none;
+font-size:18px;
+}
+
+.company-container{
+margin:20px;
+color:white;
+}
+
+.company-container h3{
+margin-bottom:10px;
+}
+
+.company-box{
+background:linear-gradient(135deg,#3a2b20,#5a402e);
+padding:20px;
+border-radius:15px;
+margin-bottom:20px;
+}
+
+.company-name{
+text-align:center;
+margin-bottom:10px;
+}
+
+.company-description{
+background:linear-gradient(135deg,#3a2b20,#5a402e);
+padding:20px;
+border-radius:15px;
+margin-bottom:20px;
+}
+
+.company-doc{
+text-align:center;
+}
+
+.company-doc img{
+width:100%;
+max-width:350px;
+border-radius:10px;
+background:#fff;
+padding:10px;
+}
+
+    
     
 </style>
 </head>
