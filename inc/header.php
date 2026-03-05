@@ -854,6 +854,30 @@ color:#4CAF50;
 text-align:center;
 }
     
+.method{
+display:flex;
+align-items:center;
+gap:8px;
+background:#2b2b2b;
+padding:8px 12px;
+border-radius:8px;
+cursor:pointer;
+}
+
+.method input{
+display:none;
+}
+
+.method-icon{
+width:20px;
+height:20px;
+object-fit:contain;
+}
+
+.method input:checked + img{
+border:2px solid #f0b24b;
+border-radius:6px;
+}
     
 </style>
 </head>
