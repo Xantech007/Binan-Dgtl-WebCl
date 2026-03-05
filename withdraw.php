@@ -9,11 +9,15 @@ exit;
 
 $user_id = $_SESSION['user_id'];
 
+/* USER INFO */
 $stmt = $pdo->prepare("SELECT * FROM users WHERE id=?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 $balance = $user['balance'];
+
+/* FETCH PAYMENT METHODS */
+$methods = $pdo->query("SELECT * FROM payment_methods WHERE status=1")->fetchAll(PDO::FETCH_ASSOC);
 
 $msg="";
 
@@ -22,7 +26,6 @@ if($_SERVER['REQUEST_METHOD']=="POST"){
 $method=$_POST['method'];
 $amount=$_POST['amount'];
 $address=$_POST['address'];
-$password=$_POST['password'];
 
 if($amount > $balance){
 
@@ -51,7 +54,7 @@ $received
 $pdo->prepare("UPDATE users SET balance=balance-? WHERE id=?")
 ->execute([$amount,$user_id]);
 
-$msg="Withdrawal submitted";
+$msg="Withdrawal submitted successfully";
 
 }
 }
@@ -80,25 +83,22 @@ Total balance
 
 <div class="withdraw-methods">
 
-<label class="method">
-<input type="radio" name="method" value="TRC20-USDT" checked>
-TRC20-USDT
-</label>
+<?php foreach($methods as $method): ?>
 
 <label class="method">
-<input type="radio" name="method" value="BEP20-USDT">
-BEP20-USDT
+
+<input type="radio"
+name="method"
+value="<?php echo htmlspecialchars($method['name']); ?>"
+required>
+
+<img src="<?php echo $method['image']; ?>" class="method-icon">
+
+<?php echo htmlspecialchars($method['name']); ?>
+
 </label>
 
-<label class="method">
-<input type="radio" name="method" value="BNB">
-BNB
-</label>
-
-<label class="method">
-<input type="radio" name="method" value="POLYGON-USDT">
-POLYGON-USDT
-</label>
+<?php endforeach; ?>
 
 </div>
 
@@ -171,11 +171,9 @@ amountInput.addEventListener("input",function(){
 let amount=parseFloat(this.value)||0;
 
 let fee=amount*0.05;
-
 let received=amount-fee;
 
 document.getElementById("fee").innerText=fee.toFixed(2)+" USDT";
-
 document.getElementById("received").innerText=received.toFixed(2)+" USDT";
 
 });
