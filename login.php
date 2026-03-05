@@ -2,11 +2,17 @@
 session_start();
 require_once "config/database.php";
 
+/* Redirect if already logged in */
+if(isset($_SESSION['user_id'])){
+    header("Location: index.php");
+    exit;
+}
+
 $error="";
 
 if($_SERVER["REQUEST_METHOD"]=="POST"){
 
-    $login=$_POST['login'];
+    $login=trim($_POST['login']);
     $password=$_POST['password'];
 
     $stmt=$pdo->prepare(
@@ -18,9 +24,16 @@ if($_SERVER["REQUEST_METHOD"]=="POST"){
     $user=$stmt->fetch(PDO::FETCH_ASSOC);
 
     if($user && password_verify($password,$user['password'])){
+
+        /* SAVE SESSION DATA */
         $_SESSION['user_id']=$user['id'];
-        header("Location: dashboard.php");
+        $_SESSION['email']=$user['email'];
+        $_SESSION['vip_level']=$user['vip_level'];
+        $_SESSION['balance']=$user['balance'];
+
+        header("Location: index.php");
         exit;
+
     }else{
         $error="Invalid credentials";
     }
@@ -173,6 +186,7 @@ display:block;
 .error{
 color:red;
 text-align:center;
+margin-top:15px;
 }
 
 </style>
@@ -189,8 +203,8 @@ text-align:center;
 <div class="title">BINANCE DIGITAL</div>
 
 <div class="tabs">
-<div class="active" onclick="switchTab('email')">Email Login</div>
-<div onclick="switchTab('phone')">Phone Login</div>
+<div class="active" onclick="switchTab(event,'email')">Email Login</div>
+<div onclick="switchTab(event,'phone')">Phone Login</div>
 </div>
 
 <!-- EMAIL LOGIN -->
@@ -250,14 +264,14 @@ Sign Up
 </form>
 
 <?php if($error): ?>
-<p class="error"><?= $error ?></p>
+<p class="error"><?= htmlspecialchars($error) ?></p>
 <?php endif; ?>
 
 </div>
 </div>
 
 <script>
-function switchTab(id){
+function switchTab(event,id){
 
 document.querySelectorAll('.form')
 .forEach(f=>f.classList.remove('active'));
