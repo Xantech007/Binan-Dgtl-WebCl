@@ -9,7 +9,7 @@ exit;
 
 $user_id = $_SESSION['user_id'];
 
-/* FETCH USER */
+/* GET USER */
 $stmt = $pdo->prepare("SELECT balance,vip_level FROM users WHERE id=?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -17,9 +17,8 @@ $user = $stmt->fetch(PDO::FETCH_ASSOC);
 $balance = $user['balance'];
 $current_vip = $user['vip_level'];
 
-$msg = "";
 
-/* HANDLE VIP ACTIVATION */
+/* ACTIVATE VIP */
 
 if(isset($_POST['activate_vip'])){
 
@@ -38,14 +37,12 @@ exit;
 
 }
 
-/* UPDATE USER */
-
 $new_balance = $balance - $fee;
 
-$update = $pdo->prepare("UPDATE users SET balance=?, vip_level=? WHERE id=?");
-$update->execute([$new_balance,$vip_id,$user_id]);
+$stmt = $pdo->prepare("UPDATE users SET balance=?, vip_level=? WHERE id=?");
+$stmt->execute([$new_balance,$vip_id,$user_id]);
 
-$_SESSION['vip_msg'] = "VIP".$vip_id." activated successfully";
+$_SESSION['vip_msg'] = "VIP ".$vip_id." activated successfully";
 
 header("Location: vip.php");
 exit;
@@ -53,10 +50,10 @@ exit;
 }
 
 $vipQuery = $pdo->query("SELECT * FROM vip ORDER BY id ASC");
-
 ?>
 
 <?php include "inc/header.php"; ?>
+
 
 <div class="vip-container">
 
@@ -79,6 +76,8 @@ unset($_SESSION['vip_msg']);
 <div class="vip-label">
 VIP<?php echo $vip['id']; ?>
 </div>
+
+<div class="vip-row">
 
 <div class="vip-left">
 <img src="assets/images/logo-vip.png">
@@ -108,6 +107,7 @@ VIP<?php echo $vip['id']; ?>
 
 </div>
 
+</div>
 
 <div class="vip-action">
 
@@ -120,8 +120,7 @@ Activated
 <?php else: ?>
 
 <button onclick="openPopup(<?php echo $vip['id']; ?>)">
-<?php echo number_format($vip['activation_fee'],2); ?> USDT
-Unlock now
+<?php echo number_format($vip['activation_fee'],2); ?> USDT Unlock now
 </button>
 
 <?php endif; ?>
@@ -135,7 +134,8 @@ Unlock now
 </div>
 
 
-<!-- POPUP -->
+
+<!-- CONFIRM POPUP -->
 
 <div class="vip-popup" id="vipPopup">
 
@@ -160,6 +160,7 @@ Cancel
 </div>
 
 </div>
+
 
 
 <?php include "inc/footer.php"; ?>
