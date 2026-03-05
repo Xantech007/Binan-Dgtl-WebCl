@@ -13,7 +13,9 @@ $methods = $pdo->query("SELECT * FROM payment_methods WHERE status=1 ORDER BY id
 <?php include "inc/header.php"; ?>
 
 <div class="recharge-header">
-<a href="index.php"><i class="fa fa-arrow-left"></i></a>
+<a href="javascript:history.back()">
+<i class="fa fa-arrow-left"></i>
+</a>
 <span>Select the recharge currency</span>
 </div>
 
