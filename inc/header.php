@@ -1115,103 +1115,88 @@ font-size:14px;
 margin-top:5px;
 }
 
-.team-container{
-margin:20px;
-}
-
-.ref-box{
-background:linear-gradient(135deg,#3a2b20,#5a402e);
-padding:20px;
-border-radius:15px;
-color:#fff;
-}
-
-.ref-code{
-display:flex;
-align-items:center;
-gap:10px;
-font-size:18px;
-margin-bottom:10px;
-}
-
-.ref-code button,
-.ref-link button{
-background:#000;
-color:#fff;
-border:none;
-padding:4px 10px;
-border-radius:12px;
-cursor:pointer;
-}
-
-.ref-link input{
-width:100%;
-padding:10px;
-border-radius:8px;
-border:none;
-margin:5px 0;
-}
-
-.social-icons{
-margin-top:15px;
-display:flex;
-gap:12px;
-}
-
-.social-icons i{
-background:#444;
-width:35px;
-height:35px;
-display:flex;
-align-items:center;
-justify-content:center;
-border-radius:50%;
-opacity:0;
-transform:scale(.5);
-transition:.4s;
-}
-
-.social-icons i.show{
-opacity:1;
-transform:scale(1);
-}
-
-
-.team-stats{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:10px;
-margin:20px 0;
-background:linear-gradient(135deg,#3a2b20,#5a402e);
-padding:15px;
-border-radius:12px;
-color:#fff;
-text-align:center;
-}
+/* TEAM LEVEL CARDS */
 
 .team-level{
+position:relative;
 display:flex;
 align-items:center;
-justify-content:space-between;
-padding:15px;
-border-radius:12px;
-margin-bottom:15px;
-color:#fff;
+padding:18px;
+border-radius:14px;
+margin-bottom:18px;
+color:white;
+overflow:hidden;
 }
 
-.level1{background:linear-gradient(90deg,#e0b44a,#36b37e);}
-.level2{background:linear-gradient(90deg,#ff6a7a,#ff9f80);}
-.level3{background:linear-gradient(90deg,#5aa3d8,#a4caa2);}
+.level1{
+background:linear-gradient(90deg,#f1d24c,#2fb07f);
+}
+
+.level2{
+background:linear-gradient(90deg,#ff5d87,#ff7e66);
+}
+
+.level3{
+background:linear-gradient(90deg,#5aa6d6,#a9d2a1);
+}
+
+
+/* LEFT BADGE */
+
+.level-badge{
+display:flex;
+align-items:center;
+gap:8px;
+min-width:110px;
+}
+
+.level-badge img{
+width:34px;
+}
+
+.level-badge span{
+font-weight:bold;
+}
+
+
+/* INNER PANEL */
+
+.level-panel{
+flex:1;
+background:rgba(0,0,0,0.2);
+padding:14px 18px;
+border-radius:12px;
+display:flex;
+justify-content:space-between;
+}
+
+
+/* STATS */
+
+.level-stats p,
+.level-commission p{
+font-size:12px;
+opacity:.9;
+margin:0;
+}
+
+.level-stats strong,
+.level-commission strong{
+font-size:14px;
+}
+
+
+/* DETAILS BUTTON */
 
 .detail-btn{
 background:#000;
 color:#fff;
-padding:6px 12px;
-border-radius:12px;
-text-decoration:none;
+padding:6px 14px;
+border-radius:20px;
 font-size:12px;
+text-decoration:none;
+margin-left:10px;
 }
-
 
     
 
