@@ -73,6 +73,7 @@ $balance = $user['balance'];
 </div>
 
 
+
 <?php include "inc/footer.php"; ?>
 
 
