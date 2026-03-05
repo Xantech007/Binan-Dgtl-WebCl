@@ -1494,183 +1494,6 @@ font-size:14px;
 }
 
 
-/* VIP CARD */
-
-.vip-card{
-background:linear-gradient(135deg,#3a2b20,#5a402e);
-padding:20px;
-border-radius:14px;
-margin-bottom:18px;
-display:flex;
-align-items:center;
-position:relative;
-color:#fff;
-}
-
-
-/* VIP LABEL */
-
-.vip-label{
-position:absolute;
-top:0;
-left:0;
-background:linear-gradient(90deg,#f7c948,#ff6b6b);
-padding:4px 12px;
-font-size:12px;
-font-weight:bold;
-border-radius:0 0 10px 0;
-color:#000;
-}
-
-
-/* VIP ICON */
-
-.vip-left{
-margin-right:15px;
-}
-
-.vip-left img{
-width:55px;
-height:auto;
-}
-
-
-/* VIP INFO */
-
-.vip-info{
-flex:1;
-font-size:13px;
-}
-
-.vip-info div{
-display:flex;
-justify-content:space-between;
-margin-bottom:6px;
-}
-
-.vip-info span{
-opacity:.85;
-}
-
-.vip-info strong{
-font-weight:600;
-}
-
-
-/* PROFIT COLOR */
-
-.green{
-color:#00e676;
-}
-
-
-/* ACTION BUTTON */
-
-.vip-action{
-margin-left:10px;
-}
-
-.vip-action button{
-background:#f0b24b;
-border:none;
-padding:8px 14px;
-border-radius:20px;
-font-size:12px;
-cursor:pointer;
-white-space:nowrap;
-color:#fff;
-}
-
-
-/* ACTIVATED BUTTON */
-
-.vip-active{
-background:#777 !important;
-cursor:default;
-}
-
-
-/* ================= POPUP ================= */
-
-.vip-popup{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:rgba(0,0,0,.65);
-display:none;
-align-items:center;
-justify-content:center;
-z-index:999;
-}
-
-
-/* POPUP BOX */
-
-.popup-box{
-background:#222;
-padding:25px;
-border-radius:12px;
-text-align:center;
-width:260px;
-color:#fff;
-}
-
-.popup-box p{
-margin-bottom:20px;
-font-size:15px;
-}
-
-
-/* CONFIRM BUTTON */
-
-.confirm-btn{
-background:#f0b24b;
-border:none;
-padding:10px 20px;
-border-radius:20px;
-margin-right:10px;
-cursor:pointer;
-color:#fff;
-}
-
-
-/* CANCEL BUTTON */
-
-.cancel-btn{
-background:#444;
-border:none;
-padding:10px 20px;
-border-radius:20px;
-color:#fff;
-cursor:pointer;
-}
-
-
-/* ================= MOBILE ================= */
-
-@media (max-width:600px){
-
-.vip-card{
-padding:18px;
-}
-
-.vip-left img{
-width:48px;
-}
-
-.vip-info{
-font-size:12px;
-}
-
-.vip-action button{
-font-size:11px;
-padding:6px 12px;
-}
-
-}
-    
 /* ================= VIP CARD ================= */
 
 .vip-card{
@@ -1680,9 +1503,10 @@ padding:20px;
 margin-bottom:18px;
 position:relative;
 display:flex;
-align-items:center;
+align-items:flex-start;
+gap:18px;
 color:#fff;
-overflow:hidden;
+min-height:120px;
 }
 
 
@@ -1701,32 +1525,28 @@ color:#000;
 }
 
 
-/* LEFT ICON */
+/* ================= LEFT ICON ================= */
 
 .vip-left{
 width:70px;
 display:flex;
 justify-content:center;
 align-items:center;
-margin-right:15px;
 }
 
 .vip-left img{
-width:50px;
+width:48px;
 }
 
 
-/* INFO SECTION */
+/* ================= INFO SECTION ================= */
 
 .vip-info{
 flex:1;
+display:grid;
+grid-template-columns:1fr auto;
+row-gap:6px;
 font-size:13px;
-}
-
-.vip-info div{
-display:flex;
-justify-content:space-between;
-margin-bottom:6px;
 }
 
 .vip-info span{
@@ -1735,6 +1555,7 @@ opacity:.85;
 
 .vip-info strong{
 font-weight:600;
+text-align:right;
 }
 
 .green{
@@ -1746,7 +1567,7 @@ color:#00e676;
 
 .vip-action{
 position:absolute;
-right:18px;
+right:20px;
 bottom:18px;
 }
 
@@ -1763,14 +1584,22 @@ overflow:hidden;
 }
 
 
+/* ACTIVATED BUTTON */
+
+.vip-active{
+background:#777 !important;
+cursor:default;
+}
+
+
 /* ================= SHINING GLASS EFFECT ================= */
 
 .vip-action button::before{
 content:'';
 position:absolute;
 top:0;
-left:-100%;
-width:50%;
+left:-120%;
+width:60%;
 height:100%;
 background:linear-gradient(
 120deg,
@@ -1779,33 +1608,6 @@ rgba(255,255,255,0.6),
 transparent
 );
 transform:skewX(-25deg);
-}
-
-/* animation every 3 seconds */
-
-.vip-action button{
-animation:shineLoop 3s infinite;
-}
-
-@keyframes shineLoop{
-0%{ }
-70%{ }
-100%{ }
-}
-
-.vip-action button:hover::before{
-animation:shine 0.8s;
-}
-
-@keyframes shine{
-0%{ left:-100%; }
-100%{ left:200%; }
-}
-
-
-/* AUTOMATIC SHINE */
-
-.vip-action button::before{
 animation:glassshine 3s infinite;
 }
 
@@ -1815,7 +1617,7 @@ animation:glassshine 3s infinite;
 left:-120%;
 }
 
-40%{
+35%{
 left:150%;
 }
 
@@ -1825,6 +1627,79 @@ left:150%;
 
 }
 
+
+/* ================= POPUP ================= */
+
+.vip-popup{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,.65);
+display:none;
+align-items:center;
+justify-content:center;
+z-index:999;
+}
+
+.popup-box{
+background:#222;
+padding:25px;
+border-radius:12px;
+text-align:center;
+width:260px;
+color:#fff;
+}
+
+.popup-box p{
+margin-bottom:20px;
+font-size:15px;
+}
+
+.confirm-btn{
+background:#f0b24b;
+border:none;
+padding:10px 20px;
+border-radius:20px;
+margin-right:10px;
+cursor:pointer;
+color:#fff;
+}
+
+.cancel-btn{
+background:#444;
+border:none;
+padding:10px 20px;
+border-radius:20px;
+color:white;
+cursor:pointer;
+}
+
+
+/* ================= MOBILE ================= */
+
+@media (max-width:600px){
+
+.vip-card{
+padding:18px;
+gap:14px;
+}
+
+.vip-left img{
+width:42px;
+}
+
+.vip-info{
+font-size:12px;
+}
+
+.vip-action button{
+font-size:11px;
+padding:6px 12px;
+}
+
+}
 
     
 </style>
