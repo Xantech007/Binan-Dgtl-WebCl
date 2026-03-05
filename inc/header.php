@@ -656,7 +656,7 @@ margin-bottom:10px;
 
 .deposit-address{
 display:flex;
-background:#222;
+background:#fff;
 border-radius:10px;
 overflow:hidden;
 margin-bottom:20px;
