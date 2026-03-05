@@ -81,7 +81,7 @@ VIP<?php echo $vip['id']; ?>
 </div>
 
 <div class="vip-left">
-<img src="assets/images/vip.jpg">
+<img src="assets/images/logo-vip.png">
 </div>
 
 <div class="vip-details">
