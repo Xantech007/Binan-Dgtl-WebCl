@@ -57,18 +57,26 @@ unset($_SESSION['withdraw_msg']);
 
 <?php endif; ?>
 
+<!-- ================= NEWS SCROLL ================= -->
 
-<!-- Scrolling News Section -->
 <div class="news-wrapper">
+
+    <div class="news-icon">
+        <i class="fa-solid fa-bell"></i>
+    </div>
+
     <div class="news-marquee">
         <div class="news-content">
+
             <?php
             while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
                 echo "<span class='news-item'>" . htmlspecialchars($row['title']) . "</span>";
             }
             ?>
+
         </div>
     </div>
+
 </div>
 
 
