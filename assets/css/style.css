@@ -1012,7 +1012,7 @@ background:#fff;
 padding:10px;
 }
 
- /* MISSION PAGE */
+/* ================= MISSION PAGE ================= */
 
 .task-reset-box{
 margin:20px;
@@ -1031,6 +1031,9 @@ color:#f0b24b;
 font-size:16px;
 }
 
+
+/* TASK STATS */
+
 .task-stats{
 margin:20px;
 background:linear-gradient(135deg,#3a2b20,#5a402e);
@@ -1045,6 +1048,13 @@ color:white;
 text-align:center;
 }
 
+.task-stats strong{
+font-size:18px;
+}
+
+
+/* PANEL */
+
 .task-panel{
 margin:20px;
 background:linear-gradient(135deg,#3a2b20,#5a402e);
@@ -1052,6 +1062,9 @@ border-radius:12px;
 padding:15px;
 color:white;
 }
+
+
+/* TABS */
 
 .task-tabs{
 display:flex;
@@ -1062,16 +1075,20 @@ margin-bottom:20px;
 .tab{
 cursor:pointer;
 padding-bottom:5px;
+font-size:15px;
+opacity:.7;
 }
 
 .tab.active{
 border-bottom:2px solid white;
+opacity:1;
 }
+
+
+/* CONTENT */
 
 .task-content{
 display:none;
-text-align:center;
-padding:40px 0;
 }
 
 .task-content.active{
@@ -1080,14 +1097,92 @@ display:block;
 
 .no-data{
 opacity:.7;
+text-align:center;
+padding:40px 0;
 }
 
 .no-data i{
 font-size:40px;
 margin-bottom:10px;
-}   
+}
 
-/* TASK RESET */
+
+/* ================= VIP TASK CARD ================= */
+
+.vip-task-card{
+background:#f5f2eb;
+border-radius:18px;
+padding:18px;
+margin-bottom:15px;
+display:flex;
+align-items:center;
+gap:15px;
+color:#222;
+}
+
+
+/* VIP LOGO */
+
+.vip-task-card img{
+width:70px;
+height:auto;
+}
+
+
+/* INFO AREA */
+
+.vip-task-info{
+flex:1;
+text-align:left;
+}
+
+.vip-task-info h3{
+margin:0;
+font-size:18px;
+color:#222;
+margin-bottom:5px;
+}
+
+.vip-task-info p{
+margin:3px 0;
+font-size:13px;
+color:#666;
+}
+
+.vip-task-info strong{
+font-size:15px;
+color:#222;
+}
+
+
+/* COMPLETE BUTTON */
+
+.complete-btn{
+background:linear-gradient(135deg,#f7b048,#f18c2e);
+border:none;
+padding:10px 20px;
+border-radius:20px;
+color:white;
+font-weight:600;
+cursor:pointer;
+font-size:14px;
+white-space:nowrap;
+}
+
+.complete-btn:hover{
+opacity:.9;
+}
+
+
+/* WAITING BUTTON */
+
+.complete-btn.disabled{
+background:#ccc;
+cursor:not-allowed;
+}
+
+
+/* RESET TIMER */
 
 .task-reset-container{
 text-align:center;
@@ -1105,7 +1200,6 @@ color:#f0b24b;
 font-size:14px;
 margin-top:5px;
 }
-
 /* ================= TEAM PAGE ================= */
 
 .team-container{
