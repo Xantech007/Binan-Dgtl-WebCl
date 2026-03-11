@@ -1515,19 +1515,22 @@ color:#000;
 
 /* VIP STATUS TOP RIGHT */
 
+/* VIP STATUS TOP RIGHT */
+
 .vip-status{
 position:absolute;
-top:6px; /* spacing from container edge */
-right:6px;
+top:0;
+right:0;
 background:#383b39;
 color:#fff;
 padding:4px 12px;
 font-size:12px;
 font-weight:bold;
-border-radius:0 0 0 10px;
+border-radius:0 0 0 10px; /* mirror of VIP label */
 display:flex;
 align-items:center;
 gap:5px;
+z-index:2;
 }
 
 .vip-status i{
