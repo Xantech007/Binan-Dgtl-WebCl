@@ -1622,14 +1622,14 @@ cursor:pointer;
 
 .vip-status{
 position:absolute;
-top:0;
-right:0;
-background:#bfbfbf;
+top:8px;
+right:8px;
+background:#383b39;
 color:#000;
 padding:4px 12px;
 font-size:12px;
 font-weight:bold;
-border-radius:0 0 0 10px;
+border-radius:10px;
 display:flex;
 align-items:center;
 gap:5px;
