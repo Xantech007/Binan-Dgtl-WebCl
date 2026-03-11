@@ -90,7 +90,7 @@ unset($_SESSION['withdraw_msg']);
             <span class="vip-badge"><?php echo $user_vip; ?></span>
         </div>
 
-        <a href="wallet.php" class="wallet-btn">
+        <a href="balance.php" class="wallet-btn">
             <i class="fa-solid fa-wallet"></i>
         </a>
     </div>
