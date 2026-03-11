@@ -127,9 +127,22 @@ $isActive = $active_vip && $active_vip['vip_id']==$vip['id'];
 
 <div class="vip-card">
 
+<!-- LEFT VIP LABEL -->
+
 <div class="vip-label">
 VIP<?php echo $vip['id']; ?>
 </div>
+
+
+<!-- RIGHT EFFECTIVE LABEL -->
+
+<?php if($isActive): ?>
+
+<div class="vip-status">
+<i class="fa fa-lock"></i> Unlock:Effective
+</div>
+
+<?php endif; ?>
 
 
 <div class="vip-row">
@@ -169,13 +182,6 @@ VIP<?php echo $vip['id']; ?>
 <div class="vip-action">
 
 <?php if($isActive): ?>
-
-<div class="vip-effective">
-
-<i class="fa fa-lock"></i>
-Unlock:Effective
-
-</div>
 
 <div class="vip-time">
 
