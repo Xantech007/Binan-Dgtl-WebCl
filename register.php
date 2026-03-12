@@ -26,15 +26,21 @@ return "";
 
 $user_country=getUserCountry();
 
+/* Get invite code from URL */
+$invite_code = isset($_GET['invite']) ? htmlspecialchars($_GET['invite']) : "";
+
 if($_SERVER["REQUEST_METHOD"]=="POST"){
 
 $type=$_POST['type'];
 $password=$_POST['password'];
 $confirm=$_POST['confirm'];
-$invite=$_POST['invite'];
+$invite=trim($_POST['invite']);
 $country=$_POST['country'];
 
-if($password!=$confirm){
+if(empty($invite)){
+$msg="Invitation code is required";
+
+}elseif($password!=$confirm){
 
 $msg="Passwords do not match";
 
@@ -252,7 +258,6 @@ margin-top:10px;
 
 <div class="input">
 <i class="fa fa-globe"></i>
-
 <select name="country" required>
 
 <option value="">Select Country</option>
@@ -260,14 +265,13 @@ margin-top:10px;
 <?php
 foreach($countries as $country){
 
-$selected=($country==$user_country)?"selected":"";
+$selected = ($country == $user_country) ? "selected" : "";
 
 echo "<option value=\"$country\" $selected>$country</option>";
 }
 ?>
 
 </select>
-
 </div>
 
 <div class="input">
@@ -282,7 +286,8 @@ echo "<option value=\"$country\" $selected>$country</option>";
 
 <div class="input">
 <i class="fa fa-thumbs-up"></i>
-<input type="text" name="invite" placeholder="Invitation Code">
+<input type="text" name="invite" placeholder="Invitation Code"
+value="<?= $invite_code ?>" required>
 </div>
 
 <button type="submit" class="btn signup">Create Account</button>
@@ -293,6 +298,7 @@ Sign In
 </button>
 
 </form>
+
 
 <!-- PHONE REGISTER -->
 
@@ -307,7 +313,6 @@ Sign In
 
 <div class="input">
 <i class="fa fa-globe"></i>
-
 <select name="country" required>
 
 <option value="">Select Country</option>
@@ -315,14 +320,13 @@ Sign In
 <?php
 foreach($countries as $country){
 
-$selected=($country==$user_country)?"selected":"";
+$selected = ($country == $user_country) ? "selected" : "";
 
 echo "<option value=\"$country\" $selected>$country</option>";
 }
 ?>
 
 </select>
-
 </div>
 
 <div class="input">
@@ -337,7 +341,8 @@ echo "<option value=\"$country\" $selected>$country</option>";
 
 <div class="input">
 <i class="fa fa-thumbs-up"></i>
-<input type="text" name="invite" placeholder="Invitation Code">
+<input type="text" name="invite" placeholder="Invitation Code"
+value="<?= $invite_code ?>" required>
 </div>
 
 <button type="submit" class="btn signup">Create Account</button>
