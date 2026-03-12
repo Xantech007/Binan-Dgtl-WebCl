@@ -8,33 +8,27 @@ try {
     $stmt = $pdo->query("SELECT COUNT(*) FROM users");
     $total_users = (int) $stmt->fetchColumn();
 
-    // 2. Total deposits – only approved (assuming status = 1 means approved)
+    // 2. Total deposits – only approved (status = 1 = approved/success)
     $stmt = $pdo->query("SELECT COALESCE(SUM(amount), 0) FROM deposits WHERE status = 1");
     $total_deposits = number_format((float) $stmt->fetchColumn(), 2);
 
-    // 3. Total withdrawals – only approved (assuming status = 1 means approved/paid)
+    // 3. Total withdrawals – only approved (status = 1 = approved/paid)
     $stmt = $pdo->query("SELECT COALESCE(SUM(amount), 0) FROM withdrawals WHERE status = 1");
     $total_withdrawals = number_format((float) $stmt->fetchColumn(), 2);
 
-    // 4. Number of active VIPs
-    // Count users who currently have at least one active VIP record
-    $stmt = $pdo->query("
-        SELECT COUNT(DISTINCT u.id)
-        FROM users u
-        INNER JOIN user_vip uv ON u.id = uv.user_id
-        WHERE uv.status = 1 
-          AND (uv.end_time IS NULL OR uv.end_time > NOW())
-    ");
-    $total_vips = (int) $stmt->fetchColumn();
+    // 4. Number of ACTIVE VIP plans (from vip table)
+    // Assuming status = 1 means active/visible/enabled in your system
+    $stmt = $pdo->query("SELECT COUNT(*) FROM vip WHERE status = 1");
+    $total_active_vip_plans = (int) $stmt->fetchColumn();
 
 } catch (PDOException $e) {
-    // ─── DEBUG OUTPUT ─── (remove or comment out in production)
+    // ─── DEBUG OUTPUT ─── (remove or comment out in production after testing)
     echo '<div style="background:#f85149; color:white; padding:1.5rem; border-radius:8px; margin:2rem 0; text-align:center; font-family:monospace;">';
     echo '<strong>Database Query Error:</strong><br>' . htmlspecialchars($e->getMessage()) . '<br>';
     echo '</div>';
 
-    // Fallback values
-    $total_users = $total_vips = 0;
+    // Fallback values so the page doesn't break
+    $total_users = $total_active_vip_plans = 0;
     $total_deposits = $total_withdrawals = "0.00";
 }
 ?>
@@ -69,8 +63,8 @@ try {
       <div class="card-icon" style="color:#d29922;">
         <i class="fas fa-crown"></i>
       </div>
-      <div class="card-value"><?= number_format($total_vips) ?></div>
-      <div class="card-label">Active VIP Members</div>
+      <div class="card-value"><?= number_format($total_active_vip_plans) ?></div>
+      <div class="card-label">Active VIP</div>
     </div>
   </div>
 
