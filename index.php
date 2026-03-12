@@ -25,11 +25,28 @@ $query = $pdo->query("SELECT title FROM news ORDER BY id DESC");
 /* Fetch VIP plans */
 $vipQuery = $pdo->query("SELECT * FROM vip WHERE status = 1 ORDER BY id ASC");
 
-/* Fetch reset time */
-$resetStmt = $pdo->query("SELECT reset_time FROM task_reset LIMIT 1");
-$reset = $resetStmt->fetch(PDO::FETCH_ASSOC);
+/* FETCH RESET TIME */
+
+$stmt = $pdo->query("SELECT reset_time FROM task_reset LIMIT 1");
+$reset = $stmt->fetch(PDO::FETCH_ASSOC);
+
 $reset_time = strtotime($reset['reset_time']);
-?>
+$now = time();
+
+/* IF RESET TIME EXPIRED → ADD 12 HOURS */
+
+if($reset_time <= $now){
+
+$new_reset = date("Y-m-d H:i:s", strtotime("+12 hours"));
+
+$pdo->prepare("
+UPDATE task_reset
+SET reset_time=?
+")->execute([$new_reset]);
+
+$reset_time = strtotime($new_reset);
+
+}
 
 <?php include "inc/header.php"; ?>
 
@@ -220,35 +237,123 @@ Unlock amount <span>$<?php echo number_format($vip['activation_fee'],2); ?></spa
 
 <?php
 $members = [
-["VIP1","johnb****@gmail.com"],
-["VIP2","maryc****@yahoo.com"],
-["VIP3","alexd****@gmail.com"],
-["VIP4","kelvine****@hotmail.com"],
-["VIP5","amaka****@gmail.com"],
-["VIP6","fghgh****@gmail.com"],
-["VIP7","sandra****@yahoo.com"],
-["VIP8","jamesk****@gmail.com"],
-["VIP3","cvxbb****@gmail.com"],
-["VIP6","fghgh****@gmail.com"]
+    ["VIP6", "hillls@yahoo.com"],
+    ["VIP4", "char*****24@outlook.com"],
+    ["VIP8", "rjoh********93@hotmail.com"],
+    ["VIP2", "lind***********02@gmail.com"],
+    ["VIP5", "lewisa@outlook.com"],
+    ["VIP1", "will*******24@yahoo.com"],
+    ["VIP8", "jenn********or@yahoo.com"],
+    ["VIP3", "just******er@hotmail.com"],
+    ["VIP2", "sara********ng@yahoo.com"],
+    ["VIP3", "grac***du@gmail.com"],
+    ["VIP5", "yqua*****96@hotmail.com"],
+    ["VIP5", "moor***57@gmail.com"],
+    ["VIP2", "mich**********ez@hotmail.com"],
+    ["VIP6", "aess*******51@gmail.com"],
+    ["VIP8", "comf***********86@outlook.com"],
+    ["VIP3", "rose***na@yahoo.com"],
+    ["VIP3", "kevi*71@hotmail.com"],
+    ["VIP3", "mega**co@gmail.com"],
+    ["VIP2", "vict*******66@outlook.com"],
+    ["VIP1", "bran****ho@hotmail.com"],
+    ["VIP6", "aman********on@gmail.com"],
+    ["VIP1", "eliz*********70@outlook.com"],
+    ["VIP1", "rebe**********26@hotmail.com"],
+    ["VIP6", "whitej@hotmail.com"],
+    ["VIP10", "dian*******ng@yahoo.com"],
+    ["VIP6", "ande***nt@gmail.com"],
+    ["VIP7", "jose********ts@yahoo.com"],
+    ["VIP1", "hasi*******41@yahoo.com"],
+    ["VIP5", "bran****ou@gmail.com"],
+    ["VIP5", "rose*****62@outlook.com"],
+    ["VIP8", "emil******er@gmail.com"],
+    ["VIP7", "joyc**ar@hotmail.com"],
+    ["VIP4", "geor******es@hotmail.com"],
+    ["VIP2", "efua**du@gmail.com"],
+    ["VIP7", "alex*********ll@yahoo.com"],
+    ["VIP2", "stev**********ez@outlook.com"],
+    ["VIP1", "fait*88@yahoo.com"],
+    ["VIP6", "rona******is@outlook.com"],
+    ["VIP2", "isab****30@gmail.com"],
+    ["VIP3", "rebe*******su@yahoo.com"],
+    ["VIP2", "thom******rk@yahoo.com"],
+    ["VIP4", "pris***********31@hotmail.com"],
+    ["VIP6", "rebe****po@hotmail.com"],
+    ["VIP10", "vkoo*****35@hotmail.com"],
+    ["VIP5", "laur***ew@hotmail.com"],
+    ["VIP7", "jhil**32@hotmail.com"],
+    ["VIP9", "jgar****76@outlook.com"],
+    ["VIP8", "anel*******33@outlook.com"],
+    ["VIP8", "davi******in@yahoo.com"],
+    ["VIP9", "sama*******05@hotmail.com"],
+    ["VIP8", "vero***a8@gmail.com"],
+    ["VIP4", "char*****ee@hotmail.com"],
+    ["VIP9", "merc*80@gmail.com"],
+    ["VIP6", "geor*************23@hotmail.com"],
+    ["VIP1", "will*****11@yahoo.com"],
+    ["VIP4", "abig***97@yahoo.com"],
+    ["VIP6", "ava335@hotmail.com"],
+    ["VIP1", "abig***59@gmail.com"],
+    ["VIP9", "kowu**89@gmail.com"],
+    ["VIP3", "euni***********05@hotmail.com"],
+    ["VIP4", "clarkc@outlook.com"],
+    ["VIP7", "thom****44@yahoo.com"],
+    ["VIP8", "geor**73@hotmail.com"],
+    ["VIP4", "jose***ee@hotmail.com"],
+    ["VIP10", "nico*******es@yahoo.com"],
+    ["VIP2", "mary****05@gmail.com"],
+    ["VIP10", "edwa****ee@gmail.com"],
+    ["VIP10", "bran*******67@outlook.com"],
+    ["VIP8", "ford***ry@hotmail.com"],
+    ["VIP2", "aamo******49@hotmail.com"],
+    ["VIP9", "step*************91@gmail.com"],
+    ["VIP3", "grac*********95@gmail.com"],
+    ["VIP7", "eriv****66@gmail.com"],
+    ["VIP7", "isab**********15@yahoo.com"],
+    ["VIP6", "geor***re@outlook.com"],
+    ["VIP9", "stel********ur@gmail.com"],
+    ["VIP6", "emma****en@yahoo.com"],
+    ["VIP2", "jenn***********88@gmail.com"],
+    ["VIP6", "ther*******ei@outlook.com"],
+    ["VIP1", "paul*******on@outlook.com"],
+    ["VIP2", "ella76@hotmail.com"],
+    ["VIP5", "step************86@yahoo.com"],
+    ["VIP5", "evel*********ez@yahoo.com"],
+    ["VIP8", "tayl***********61@yahoo.com"],
+    ["VIP5", "rebe***83@hotmail.com"],
+    ["VIP8", "ama.*****ur@hotmail.com"],
+    ["VIP3", "pris***********su@gmail.com"],
+    ["VIP4", "ella*******48@outlook.com"],
+    ["VIP2", "garc*am@yahoo.com"],
+    ["VIP5", "fait****17@gmail.com"],
+    ["VIP2", "aman***co@yahoo.com"],
+    ["VIP5", "laur******01@hotmail.com"],
+    ["VIP7", "oliv*********ez@hotmail.com"],
+    ["VIP10", "merc*91@outlook.com"],
+    ["VIP1", "brid**********22@outlook.com"],
+    ["VIP8", "andr*****ll@gmail.com"],
+    ["VIP6", "rona*********43@yahoo.com"],
+    ["VIP10", "jenn**************32@gmail.com"],
+    ["VIP10", "appi****57@hotmail.com"],
+    ["VIP7", "gonz***ze@outlook.com"]
 ];
-
 shuffle($members);
-
-foreach($members as $member):
-
-$earning = rand(50,1500);
 ?>
 
-<div class="member-row">
-<div class="member-card">
-<div class="vip-level"><?php echo $member[0]; ?></div>
-<div class="earning">+$<?php echo number_format($earning,2); ?></div>
-<div class="email"><?php echo $member[1]; ?></div>
-</div>
-</div>
-
+<!-- Your container divs -->
+<div class="members-container">
+<?php foreach($members as $member): 
+    $earning = rand(50, 1500);
+?>
+    <div class="member-row">
+        <div class="member-card">
+            <div class="vip-level"><?php echo $member[0]; ?></div>
+            <div class="earning">+$<?php echo number_format($earning, 2); ?></div>
+            <div class="email"><?php echo $member[1]; ?></div>
+        </div>
+    </div>
 <?php endforeach; ?>
-
 </div>
 </div>
 </div>
