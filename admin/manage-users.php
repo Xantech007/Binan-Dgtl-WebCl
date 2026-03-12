@@ -106,8 +106,6 @@ try {
           <th>VIP Level</th>
           <th>Balance</th>
           <th>Withdrawal Bal.</th>
-          <th>Invite Code</th>
-          <th>Referral Code</th>
           <th>Referred By</th>
           <th>Created</th>
           <th>Actions</th>
@@ -122,8 +120,6 @@ try {
           <td><?= htmlspecialchars($user['vip_level'] ?? '0') ?></td>
           <td>$<?= number_format($user['balance'] ?? 0, 2) ?></td>
           <td>$<?= number_format($user['withdrawal_balance'] ?? 0, 2) ?></td>
-          <td><?= htmlspecialchars($user['invite_code'] ?? '-') ?></td>
-          <td><?= htmlspecialchars($user['referral_code'] ?? '-') ?></td>
           <td><?= htmlspecialchars($user['referred_by'] ?? '-') ?></td>
           <td><?= date('Y-m-d H:i', strtotime($user['created_at'])) ?></td>
           <td>
