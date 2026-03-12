@@ -1,8 +1,4 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-<?php
 session_start();
 
 if(!isset($_SESSION['user_id'])){
@@ -79,29 +75,27 @@ unset($_SESSION['withdraw_msg']);
 <?php endif; ?>
 
 <!-- ================= NEWS SCROLL ================= -->
+
 <div class="news-wrapper">
+
     <div class="news-icon">
         <i class="fa-solid fa-bell"></i>
     </div>
+
     <div class="news-marquee">
         <div class="news-content">
+
             <?php
-            // Fetch once into array (best practice - avoids re-querying DB)
-            $newsItems = $query->fetchAll(PDO::FETCH_ASSOC);
-
-            // First copy (visible start)
-            foreach ($newsItems as $row) {
-                echo "<span class='news-item'>" . htmlspecialchars($row['title']) . "</span>";
-            }
-
-            // Second copy (for seamless loop)
-            foreach ($newsItems as $row) {
+            while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
                 echo "<span class='news-item'>" . htmlspecialchars($row['title']) . "</span>";
             }
             ?>
+
         </div>
     </div>
+
 </div>
+
 
 
 <!-- DASHBOARD ACTION SECTION -->
