@@ -5,7 +5,7 @@ require_once __DIR__ . '/inc/header.php';
 $message = '';
 $error   = '';
 
-// Handle approve / reject actions (unchanged)
+// Handle approve / reject actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $deposit_id = (int)($_POST['deposit_id'] ?? 0);
     $action     = $_POST['action'] ?? '';
@@ -125,14 +125,23 @@ try {
             <?= htmlspecialchars($dep['method_name']) ?>
           </td>
           <td style="padding:1.3rem 1rem; text-align:center;">
-            <?php if (!empty($dep['proof'])): ?>
-              <button 
-                class="btn" 
-                style="padding:0.6rem 1.2rem; font-size:0.95rem;"
-                onclick="openPreview('<?= htmlspecialchars($dep['proof']) ?>')"
-              >
-                <i class="fas fa-eye"></i> View Proof
-              </button>
+            <?php if (!empty($dep['proof'])): 
+                // Using ../ because you confirmed this works from manage-deposits.php
+                $proof_path = '../' . htmlspecialchars($dep['proof']);
+            ?>
+              <div style="position: relative; display: inline-block; cursor: pointer;" 
+                   onclick="openPreview('<?= $proof_path ?>')">
+                <img 
+                  src="<?= $proof_path ?>" 
+                  alt="Proof thumbnail" 
+                  style="width: 80px; height: 80px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); box-shadow: 0 2px 6px rgba(0,0,0,0.4); transition: transform 0.15s;"
+                  onmouseover="this.style.transform='scale(1.05)'"
+                  onmouseout="this.style.transform='scale(1)'"
+                >
+                <div style="position: absolute; bottom: 4px; right: 4px; background: rgba(0,0,0,0.6); color: white; font-size: 11px; padding: 2px 6px; border-radius: 4px;">
+                  Click to enlarge
+                </div>
+              </div>
             <?php else: ?>
               <span style="color:var(--text-muted);">No proof</span>
             <?php endif; ?>
@@ -167,19 +176,18 @@ try {
 
   <?php endif; ?>
 
-  <!-- Fullscreen Image Preview Modal (unchanged) -->
-  <div id="previewModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:2000; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
-    <div style="position:relative; max-width:95%; max-height:95vh;">
-      <button onclick="closePreview()" style="position:absolute; top:20px; right:20px; background:rgba(0,0,0,0.6); border:none; color:white; font-size:2.5rem; width:50px; height:50px; border-radius:50%; cursor:pointer; z-index:10;">
+  <!-- Fullscreen Image Preview Modal -->
+  <div id="previewModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.94); z-index:2000; align-items:center; justify-content:center; backdrop-filter:blur(6px);">
+    <div style="position:relative; max-width:96%; max-height:96vh;">
+      <button onclick="closePreview()" style="position:absolute; top:16px; right:16px; background:rgba(0,0,0,0.7); border:none; color:white; font-size:2.8rem; width:56px; height:56px; border-radius:50%; cursor:pointer; z-index:10; line-height:56px; text-align:center;">
         ×
       </button>
-      <img id="previewImage" src="" alt="Proof Image" style="max-width:100%; max-height:90vh; border-radius:12px; box-shadow:0 0 40px rgba(0,0,0,0.8); object-fit:contain;">
+      <img id="previewImage" src="" alt="Proof Image" style="max-width:100%; max-height:92vh; border-radius:12px; box-shadow:0 0 60px rgba(0,0,0,0.9); object-fit:contain; background:#000;">
     </div>
   </div>
 </main>
 
 <script>
-// Preview functions (unchanged)
 function openPreview(src) {
   document.getElementById('previewImage').src = src;
   document.getElementById('previewModal').style.display = 'flex';
@@ -187,6 +195,7 @@ function openPreview(src) {
 
 function closePreview() {
   document.getElementById('previewModal').style.display = 'none';
+  // optional: clear src to save memory
   document.getElementById('previewImage').src = '';
 }
 
