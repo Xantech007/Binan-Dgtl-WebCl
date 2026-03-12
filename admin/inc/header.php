@@ -9,13 +9,18 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 }
 
 require_once __DIR__ . '/../../config/database.php'; // adjust path if needed
+
+// Determine current page to hide "Back to Dashboard" on dashboard itself
+$current_page = basename($_SERVER['PHP_SELF']);
+$is_dashboard = ($current_page === 'dashboard.php');
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>BINANCE DIGITAL - Admin Dashboard</title>
+  <title>BINANCE DIGITAL - Admin</title>
   
   <!-- Font Awesome 6 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" 
@@ -40,102 +45,112 @@ require_once __DIR__ . '/../../config/database.php'; // adjust path if needed
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
-      padding: 30px 20px;
+      padding: 20px;
     }
     .container {
       max-width: 1200px;
       margin: 0 auto;
     }
-    header {
-      text-align: center;
-      margin-bottom: 3rem;
+
+    /* Header with buttons */
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
     }
-    .logo {
-      margin-bottom: 1rem;
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
     }
+
     .logo img {
-      width: 90px;
+      width: 70px;
       height: auto;
       border-radius: 10px;
     }
-    h1 {
-      font-size: 2.1rem;
-      margin-bottom: 0.4rem;
+
+    .header-title {
+      font-size: 1.6rem;
+      font-weight: 600;
     }
-    .welcome {
-      color: var(--text-muted);
-      font-size: 1.1rem;
-    }
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 3rem;
-    }
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.8rem;
-      text-align: center;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 24px rgba(0,0,0,0.4);
-    }
-    .card-icon {
-      font-size: 2.6rem;
-      margin-bottom: 1rem;
-      opacity: 0.9;
-    }
-    .card-value {
-      font-size: 2.4rem;
-      font-weight: 700;
-      margin: 0.4rem 0;
-    }
-    .card-label {
-      color: var(--text-muted);
-      font-size: 1.05rem;
-    }
-    .actions-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1.2rem;
-    }
-    .btn {
+
+    .header-buttons {
       display: flex;
+      gap: 1rem;
+    }
+
+    .btn-header {
+      display: inline-flex;
       align-items: center;
-      justify-content: center;
-      gap: 0.7rem;
-      background: var(--primary);
-      color: white;
-      text-decoration: none;
-      padding: 1.1rem 1.5rem;
+      gap: 0.6rem;
+      padding: 0.7rem 1.3rem;
       border-radius: 8px;
-      font-size: 1.05rem;
+      font-size: 0.95rem;
       font-weight: 500;
+      text-decoration: none;
       transition: all 0.2s;
-      border: none;
       cursor: pointer;
     }
-    .btn:hover {
-      background: var(--primary-dark);
-      transform: translateY(-2px);
+
+    .btn-back {
+      background: #444c56;
+      color: var(--text);
     }
-    .btn.green  { background: var(--green); }
-    .btn.green:hover  { background: #1a7c2e; }
-    .btn.red    { background: var(--red); }
-    .btn.red:hover    { background: #d32f2f; }
+    .btn-back:hover {
+      background: #586069;
+    }
+
+    .btn-logout {
+      background: var(--red);
+      color: white;
+    }
+    .btn-logout:hover {
+      background: #d32f2f;
+    }
+
+    @media (max-width: 768px) {
+      .admin-header {
+        flex-direction: column;
+        gap: 1.2rem;
+        text-align: center;
+      }
+      .header-buttons {
+        width: 100%;
+        justify-content: center;
+      }
+      .btn-header {
+        flex: 1;
+        justify-content: center;
+      }
+    }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <header>
-    <div class="logo">
-      <img src="../assets/images/vip.jpg" alt="BINANCE DIGITAL">
+
+  <header class="admin-header">
+    <div class="logo-area">
+      <div class="logo">
+        <img src="../assets/images/vip.jpg" alt="BINANCE DIGITAL">
+      </div>
+      <div class="header-title">Admin Panel</div>
     </div>
-    <h1>Admin Dashboard</h1>
-    <div class="welcome">Welcome back, <?= htmlspecialchars($_SESSION['admin_fullname'] ?? $_SESSION['admin_username'] ?? 'Admin') ?></div>
+
+    <div class="header-buttons">
+      <?php if (!$is_dashboard): ?>
+        <a href="dashboard.php" class="btn-header btn-back">
+          <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+      <?php endif; ?>
+      
+      <a href="logout.php" class="btn-header btn-logout" onclick="return confirm('Are you sure you want to log out?');">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </a>
+    </div>
   </header>
