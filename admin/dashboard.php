@@ -1,6 +1,6 @@
 <?php
 // admin/dashboard.php
-require_once __DIR__ . '/inc/header.php';
+require_once __DIR__ . '/inc/header2.php';
 
 // Fetch statistics using your REAL table structure
 try {
