@@ -97,7 +97,6 @@ unset($_SESSION['withdraw_msg']);
 </div>
 
 
-
 <!-- DASHBOARD ACTION SECTION -->
 
 <div class="dashboard-container">
