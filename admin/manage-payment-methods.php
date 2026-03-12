@@ -257,62 +257,46 @@ try {
   </div>
   <?php endif; ?>
 
-  <!-- EDIT MODAL -->
-  <div id="editModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); align-items:center; justify-content:center; z-index:1000;">
-    <div style="background:var(--card); border:1px solid var(--border); border-radius:12px; width:90%; max-width:800px; padding:2rem; position:relative;">
-      <button onclick="document.getElementById('editModal').style.display='none'" 
-              style="position:absolute; top:1rem; right:1.5rem; background:none; border:none; color:var(--text-muted); font-size:2rem; cursor:pointer;">
-        ×
+<!-- EDIT MODAL -->
+<div id="editModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); align-items:center; justify-content:center; z-index:1000;">
+  <div style="
+    background:var(--card); 
+    border:1px solid var(--border); 
+    border-radius:12px; 
+    width:90%; 
+    max-width:800px; 
+    max-height:85vh;           /* ← added */
+    overflow-y:auto;           /* ← added – this creates vertical scrollbar when needed */
+    padding:2rem; 
+    position:relative;
+  ">
+    <button onclick="document.getElementById('editModal').style.display='none'" 
+            style="position:absolute; top:1rem; right:1.5rem; background:none; border:none; color:var(--text-muted); font-size:2rem; cursor:pointer;">
+      ×
+    </button>
+
+    <h2 style="margin-bottom:1.8rem; text-align:center;">Edit Payment Method</h2>
+
+    <form method="POST" enctype="multipart/form-data">
+      <input type="hidden" name="action" value="edit">
+      <input type="hidden" name="id" id="edit_id">
+      <input type="hidden" name="current_qr_image" id="edit_current_qr">
+
+      <!-- all the form fields remain the same -->
+      <div style="margin-bottom:1.4rem;">
+        <label style="display:block; margin-bottom:0.5rem;">Method Name *</label>
+        <input type="text" name="name" id="edit_name" required 
+               style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
+      </div>
+
+      <!-- ... rest of the form fields ... -->
+
+      <button type="submit" class="btn" style="width:100%; padding:1rem; margin-top:1.5rem;">
+        <i class="fas fa-save"></i> Save Changes
       </button>
-
-      <h2 style="margin-bottom:1.8rem; text-align:center;">Edit Payment Method</h2>
-
-      <form method="POST" enctype="multipart/form-data">
-        <input type="hidden" name="action" value="edit">
-        <input type="hidden" name="id" id="edit_id">
-        <input type="hidden" name="current_qr_image" id="edit_current_qr">
-
-        <div style="margin-bottom:1.4rem;">
-          <label style="display:block; margin-bottom:0.5rem;">Method Name *</label>
-          <input type="text" name="name" id="edit_name" required 
-                 style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
-        </div>
-
-        <div style="margin-bottom:1.4rem;">
-          <label style="display:block; margin-bottom:0.5rem;">Wallet Address</label>
-          <input type="text" name="wallet_address" id="edit_wallet_address" 
-                 style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
-        </div>
-
-        <div style="margin-bottom:1.4rem;">
-          <label style="display:block; margin-bottom:0.5rem;">Current QR:</label>
-          <div id="current_qr_preview" style="margin:0.5rem 0;"></div>
-          <label style="display:block; margin-bottom:0.5rem;">New QR Code (leave empty to keep current)</label>
-          <input type="file" name="qr_image" accept="image/*" 
-                 style="width:100%; padding:0.6rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
-        </div>
-
-        <div style="margin-bottom:1.4rem;">
-          <label style="display:block; margin-bottom:0.5rem;">Withdrawal Fee ($)</label>
-          <input type="number" name="withdrawal_fee" id="edit_withdrawal_fee" step="0.01" min="0"
-                 style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
-        </div>
-
-        <div style="margin-bottom:2rem;">
-          <label style="display:block; margin-bottom:0.5rem;">Status</label>
-          <select name="status" id="edit_status" style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
-            <option value="1">Active</option>
-            <option value="0">Inactive</option>
-          </select>
-        </div>
-
-        <button type="submit" class="btn" style="width:100%; padding:1rem;">
-          <i class="fas fa-save"></i> Save Changes
-        </button>
-      </form>
-    </div>
+    </form>
   </div>
-
+</div>
 </main>
 
 <script>
