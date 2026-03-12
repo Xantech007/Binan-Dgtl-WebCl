@@ -9,7 +9,6 @@ exit;
 
 $user_id = $_SESSION['user_id'];
 
-
 /* AUTO EXPIRE VIP */
 
 $pdo->prepare("
@@ -26,7 +25,7 @@ if(isset($_POST['claim_vip'])){
 $user_vip_id=$_POST['user_vip_id'];
 
 $stmt=$pdo->prepare("
-SELECT uv.*,v.daily_profit,v.activation_fee
+SELECT uv.*,v.daily_profit,v.activation_fee,v.duration_days
 FROM user_vip uv
 JOIN vip v ON uv.vip_id=v.id
 WHERE uv.id=? AND uv.user_id=? AND uv.status=1
@@ -41,7 +40,6 @@ $start=strtotime($vip['start_time']);
 $now=time();
 
 $days_passed=floor(($now-$start)/86400);
-
 $claimable_days=$days_passed-$vip['claimed_days'];
 
 if($claimable_days>0){
@@ -101,7 +99,7 @@ $reset_time = strtotime($reset['reset_time']);
 /* GET RUNNING VIP */
 
 $stmt=$pdo->prepare("
-SELECT uv.*,v.daily_profit,v.activation_fee
+SELECT uv.*,v.daily_profit,v.activation_fee,v.duration_days
 FROM user_vip uv
 JOIN vip v ON uv.vip_id=v.id
 WHERE uv.user_id=? AND uv.status=1
@@ -136,13 +134,9 @@ $remaining_tasks=count($running_vips);
 
 
 <div class="task-reset-box">
-
 <i class="fa-solid fa-clock"></i>
-
 <span>Task reset</span>
-
 <strong id="countdown"></strong>
-
 </div>
 
 
@@ -192,13 +186,27 @@ Completed
 <?php foreach($running_vips as $vip):
 
 $start=strtotime($vip['start_time']);
+$end=strtotime($vip['end_time']);
 $now=time();
 
-$days=floor(($now-$start)/86400);
+$total_days=$vip['duration_days'];
+$days_passed=floor(($now-$start)/86400);
 
-$claimable=$days-$vip['claimed_days'];
+$claimable=$days_passed-$vip['claimed_days'];
+
+$earned=$vip['claimed_days']*$vip['daily_profit'];
+
+$total_profit=$total_days*$vip['daily_profit'];
+
+$remaining_profit=$total_profit-$earned;
 
 $profit=$claimable*$vip['daily_profit'];
+
+/* NEXT DAILY TIMER */
+
+$next_day_time=$start+(($days_passed+1)*86400);
+$remaining_seconds=$next_day_time-$now;
+if($remaining_seconds<0)$remaining_seconds=0;
 
 ?>
 
@@ -210,24 +218,65 @@ $profit=$claimable*$vip['daily_profit'];
 
 <h3>VIP<?php echo $vip['vip_id']; ?></h3>
 
-<p>Price</p>
-<strong><?php echo number_format($vip['activation_fee'],2); ?></strong>
+<div class="vip-grid">
 
-<p>Income</p>
-<strong><?php echo number_format($profit,2); ?></strong>
+<div>
+<span>Price</span>
+<strong>$<?php echo number_format($vip['activation_fee'],2); ?></strong>
+</div>
+
+<div>
+<span>Daily Income</span>
+<strong>$<?php echo number_format($vip['daily_profit'],2); ?></strong>
+</div>
+
+<div>
+<span>Total Profit</span>
+<strong>$<?php echo number_format($total_profit,2); ?></strong>
+</div>
+
+<div>
+<span>Earned</span>
+<strong>$<?php echo number_format($earned,2); ?></strong>
+</div>
+
+<div>
+<span>Remaining</span>
+<strong>$<?php echo number_format($remaining_profit,2); ?></strong>
+</div>
+
+<div>
+<span>Available</span>
+<strong>$<?php echo number_format($profit,2); ?></strong>
+</div>
 
 </div>
+
+
+<div class="vip-progress">
+
+<div class="progress-bar">
+<div class="progress-fill"
+data-remaining="<?php echo $remaining_seconds; ?>"></div>
+</div>
+
+<div class="progress-time"
+data-time="<?php echo $remaining_seconds; ?>">
+00:00:00
+</div>
+
+</div>
+
+</div>
+
 
 <?php if($claimable>0): ?>
 
 <form method="POST">
-
 <input type="hidden" name="user_vip_id" value="<?php echo $vip['id']; ?>">
-
 <button name="claim_vip" class="complete-btn">
 To complete
 </button>
-
 </form>
 
 <?php else: ?>
@@ -271,10 +320,10 @@ Waiting
 <h3>VIP<?php echo $c['vip_id']; ?></h3>
 
 <p>Price</p>
-<strong><?php echo number_format($c['activation_fee'],2); ?></strong>
+<strong>$<?php echo number_format($c['activation_fee'],2); ?></strong>
 
 <p>Income</p>
-<strong><?php echo number_format($c['profit'],2); ?></strong>
+<strong>$<?php echo number_format($c['profit'],2); ?></strong>
 
 <p>Complete time</p>
 <strong>
@@ -298,6 +347,8 @@ Waiting
 
 
 <script>
+
+/* RESET TIMER */
 
 var resetTime = <?php echo $reset_time * 1000; ?>;
 
@@ -324,6 +375,58 @@ seconds.toString().padStart(2,'0');
 
 setInterval(updateCountdown,1000);
 
+
+/* PROGRESS BAR TIMER */
+
+function updateVIPTimers(){
+
+document.querySelectorAll(".progress-fill").forEach(function(bar){
+
+var remaining=parseInt(bar.dataset.remaining);
+
+if(remaining<=0){
+bar.style.width="100%";
+return;
+}
+
+var total=86400;
+
+var percent=((total-remaining)/total)*100;
+
+bar.style.width=percent+"%";
+
+bar.dataset.remaining=remaining-1;
+
+});
+
+document.querySelectorAll(".progress-time").forEach(function(timer){
+
+var t=parseInt(timer.dataset.time);
+
+if(t<=0){
+timer.innerHTML="Ready";
+return;
+}
+
+var h=Math.floor(t/3600);
+var m=Math.floor((t%3600)/60);
+var s=t%60;
+
+timer.innerHTML=
+String(h).padStart(2,'0')+":"+
+String(m).padStart(2,'0')+":"+
+String(s).padStart(2,'0');
+
+timer.dataset.time=t-1;
+
+});
+
+}
+
+setInterval(updateVIPTimers,1000);
+
+
+/* TAB SWITCH */
 
 function switchTab(tab){
 
