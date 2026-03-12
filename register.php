@@ -34,7 +34,7 @@ if($_SERVER["REQUEST_METHOD"]=="POST"){
 $type=$_POST['type'];
 $password=$_POST['password'];
 $confirm=$_POST['confirm'];
-$invite=trim($_POST['invite']);
+$ref=trim($_POST['invite']);
 $country=$_POST['country'];
 
 if(empty($invite)){
