@@ -7,7 +7,24 @@ header("Location: login.php");
 exit;
 }
 
-$methods = $pdo->query("SELECT * FROM payment_methods WHERE status=1 ORDER BY id ASC");
+$user_id = $_SESSION['user_id'];
+
+$stmt = $pdo->prepare("SELECT country FROM users WHERE id=?");
+$stmt->execute([$user_id]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+$user_country = $user['country'] ?? '';
+
+$stmt = $pdo->prepare("
+SELECT * FROM payment_methods 
+WHERE status=1 
+AND (active_country IS NULL OR active_country='' OR active_country=?)
+ORDER BY id ASC
+");
+
+$stmt->execute([$user_country]);
+
+$methods = $stmt;
 ?>
 
 <?php include "inc/header.php"; ?>
