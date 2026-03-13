@@ -4,155 +4,164 @@ require_once __DIR__ . '/inc/header.php';
 $message='';
 $error='';
 
-/* Upload directories */
+$qr_upload_dir=__DIR__.'/../../assets/images/qr/';
+$logo_upload_dir=__DIR__.'/../../assets/images/';
 
-$qr_upload_dir=$_SERVER['DOCUMENT_ROOT']."/assets/images/qr/";
-$logo_upload_dir=$_SERVER['DOCUMENT_ROOT']."/assets/images/";
-
-$qr_url="assets/images/qr/";
-$logo_url="assets/images/";
-
-/* Ensure folders exist */
+$qr_prefix='assets/images/qr/';
+$logo_prefix='assets/images/';
 
 if(!is_dir($qr_upload_dir)) mkdir($qr_upload_dir,0755,true);
 if(!is_dir($logo_upload_dir)) mkdir($logo_upload_dir,0755,true);
 
+if($_SERVER['REQUEST_METHOD']==='POST'){
 
-function uploadImage($file,$dir,$url_prefix){
-
-if(empty($file['name'])) return null;
-
-$allowed=['jpg','jpeg','png','webp','gif'];
-$ext=strtolower(pathinfo($file['name'],PATHINFO_EXTENSION));
-
-if(!in_array($ext,$allowed)){
-throw new Exception("Invalid image format.");
-}
-
-$filename=uniqid().".".$ext;
-$target=$dir.$filename;
-
-if(!move_uploaded_file($file['tmp_name'],$target)){
-throw new Exception("Image upload failed.");
-}
-
-return $url_prefix.$filename;
-
-}
-
-
-
-if($_SERVER['REQUEST_METHOD']=="POST"){
+$action=$_POST['action']??'';
 
 try{
 
-$action=$_POST['action'];
+$name=trim($_POST['name']??'');
+$wallet_address=trim($_POST['wallet_address']??'');
+$status=(int)($_POST['status']??1);
+$withdrawal_fee=(float)($_POST['withdrawal_fee']??0);
 
-$name=trim($_POST['name']);
-$crypto=(int)($_POST['crypto'] ?? 0);
-$type=$_POST['type'] ?? null;
-$status=(int)$_POST['status'];
+$crypto=(int)($_POST['crypto']??0);
+$type=$_POST['type']??null;
+$network=trim($_POST['network']??'');
+$account_name=trim($_POST['account_name']??'');
+$account_number=trim($_POST['account_number']??'');
 
-$wallet_address=trim($_POST['wallet_address']);
-$network=trim($_POST['network']);
-$account_name=trim($_POST['account_name']);
-$account_number=trim($_POST['account_number']);
+$qr_image_path=$_POST['current_qr_image']??'';
+$logo_path=$_POST['current_logo']??'';
 
-if(!$name){
-throw new Exception("Method name required");
+if(empty($name)){
+throw new Exception("Payment method name required");
 }
 
+/* QR UPLOAD */
 
-/* upload qr */
+if(!empty($_FILES['qr_image']['name'])){
 
-$qr_image=uploadImage($_FILES['qr_image'],$qr_upload_dir,$qr_url);
+$file=$_FILES['qr_image'];
+$ext=strtolower(pathinfo($file['name'],PATHINFO_EXTENSION));
+$allowed=['jpg','jpeg','png','webp'];
 
+if(!in_array($ext,$allowed)){
+throw new Exception("Invalid QR format");
+}
 
-/* upload logo */
+$new_name="qr_".time().".".$ext;
+$target=$qr_upload_dir.$new_name;
 
-$image=uploadImage($_FILES['image'],$logo_upload_dir,$logo_url);
+if(!move_uploaded_file($file['tmp_name'],$target)){
+throw new Exception("QR upload failed");
+}
 
+$qr_image_path=$qr_prefix.$new_name;
+}
 
-if($action=="add"){
+/* LOGO UPLOAD */
 
-$stmt=$pdo->prepare("INSERT INTO payment_methods
-(name,crypto,type,wallet_address,network,account_name,account_number,qr_image,image,status)
-VALUES(?,?,?,?,?,?,?,?,?,?)");
+if(!empty($_FILES['logo']['name'])){
 
-$stmt->execute([
+$file=$_FILES['logo'];
+$ext=strtolower(pathinfo($file['name'],PATHINFO_EXTENSION));
+$allowed=['jpg','jpeg','png','webp'];
+
+if(!in_array($ext,$allowed)){
+throw new Exception("Invalid logo format");
+}
+
+$safe=strtolower(preg_replace('/[^a-z0-9]+/','-', $name));
+$new_logo=$safe.".".$ext;
+
+$target=$logo_upload_dir.$new_logo;
+
+if(!move_uploaded_file($file['tmp_name'],$target)){
+throw new Exception("Logo upload failed");
+}
+
+$logo_path=$logo_prefix.$new_logo;
+}
+
+$data=[
 $name,
+$wallet_address,
+$qr_image_path,
+$logo_path,
 $crypto,
 $type,
-$wallet_address,
 $network,
 $account_name,
 $account_number,
-$qr_image,
-$image,
-$status
-]);
+$status,
+$withdrawal_fee
+];
 
-$message="Payment method added";
+if($action==="add"){
+
+$stmt=$pdo->prepare("
+INSERT INTO payment_methods
+(name,wallet_address,qr_image,image,crypto,type,network,account_name,account_number,status,withdrawal_fee)
+VALUES(?,?,?,?,?,?,?,?,?,?,?)
+");
+
+$stmt->execute($data);
+
+$message="Payment method added successfully";
 
 }
 
-
-if($action=="edit"){
+if($action==="edit"){
 
 $id=(int)$_POST['id'];
 
-$current_qr=$_POST['current_qr'];
-$current_logo=$_POST['current_logo'];
+$data[]=$id;
 
-if(!$qr_image) $qr_image=$current_qr;
-if(!$image) $image=$current_logo;
-
-$stmt=$pdo->prepare("UPDATE payment_methods SET
+$stmt=$pdo->prepare("
+UPDATE payment_methods SET
 name=?,
+wallet_address=?,
+qr_image=?,
+image=?,
 crypto=?,
 type=?,
-wallet_address=?,
 network=?,
 account_name=?,
 account_number=?,
-qr_image=?,
-image=?,
-status=?
-WHERE id=?");
+status=?,
+withdrawal_fee=?
+WHERE id=?
+");
 
-$stmt->execute([
-$name,
-$crypto,
-$type,
-$wallet_address,
-$network,
-$account_name,
-$account_number,
-$qr_image,
-$image,
-$status,
-$id
-]);
+$stmt->execute($data);
 
 $message="Payment method updated";
 
 }
 
 }catch(Exception $e){
-
 $error=$e->getMessage();
-
 }
 
 }
 
-
-
-/* delete */
+/* DELETE METHOD */
 
 if(isset($_POST['action']) && $_POST['action']=="delete"){
 
 $id=(int)$_POST['id'];
+
+$stmt=$pdo->prepare("SELECT qr_image,image FROM payment_methods WHERE id=?");
+$stmt->execute([$id]);
+$files=$stmt->fetch(PDO::FETCH_ASSOC);
+
+if($files['qr_image'] && file_exists(__DIR__.'/../../'.$files['qr_image'])){
+unlink(__DIR__.'/../../'.$files['qr_image']);
+}
+
+if($files['image'] && file_exists(__DIR__.'/../../'.$files['image'])){
+unlink(__DIR__.'/../../'.$files['image']);
+}
 
 $stmt=$pdo->prepare("DELETE FROM payment_methods WHERE id=?");
 $stmt->execute([$id]);
@@ -161,149 +170,162 @@ $message="Payment method deleted";
 
 }
 
-
-
-/* load */
+/* LOAD METHODS */
 
 $stmt=$pdo->query("SELECT * FROM payment_methods ORDER BY id DESC");
 $methods=$stmt->fetchAll(PDO::FETCH_ASSOC);
-
 ?>
 
 <main>
 
-<h1 style="text-align:center;margin:30px 0;">Manage Payment Methods</h1>
-
+<h1 style="text-align:center;margin:2.5rem 0 2rem;">Manage Payment Methods</h1>
 
 <?php if($message): ?>
-<div class="success"><?=htmlspecialchars($message)?></div>
+<div style="background:#238636;color:white;padding:1.2rem;border-radius:8px;margin-bottom:2rem;text-align:center;max-width:900px;margin-left:auto;margin-right:auto;">
+<?= htmlspecialchars($message) ?>
+</div>
 <?php endif; ?>
-
 
 <?php if($error): ?>
-<div class="error"><?=htmlspecialchars($error)?></div>
+<div style="background:#f85149;color:white;padding:1.2rem;border-radius:8px;margin-bottom:2rem;text-align:center;max-width:900px;margin-left:auto;margin-right:auto;">
+<?= htmlspecialchars($error) ?>
+</div>
 <?php endif; ?>
 
+<!-- ADD METHOD -->
 
-<h2>Add Payment Method</h2>
+<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:2rem;margin-bottom:3rem;max-width:900px;margin-left:auto;margin-right:auto;">
+
+<h2 style="margin-bottom:1.8rem;text-align:center;">Add Payment Method</h2>
 
 <form method="POST" enctype="multipart/form-data">
 
 <input type="hidden" name="action" value="add">
 
+<div style="margin-bottom:1.4rem;">
+<label>Method Name</label>
+<input type="text" name="name" required style="width:100%;padding:0.8rem;">
+</div>
 
-<label>Name</label>
-<input type="text" name="name" required>
+<div style="margin-bottom:1.4rem;">
+<label>Wallet Address</label>
+<input type="text" name="wallet_address" style="width:100%;padding:0.8rem;">
+</div>
 
-
+<div style="margin-bottom:1.4rem;">
 <label>Crypto?</label>
-<select name="crypto">
-<option value="1">Yes (Crypto)</option>
+<select name="crypto" style="width:100%;padding:0.8rem;">
+<option value="1">Yes</option>
 <option value="0">No</option>
 </select>
+</div>
 
-
+<div style="margin-bottom:1.4rem;">
 <label>Type</label>
-<select name="type">
+<select name="type" style="width:100%;padding:0.8rem;">
 <option value="">None</option>
 <option value="bank">Bank</option>
 <option value="momo">MOMO</option>
 </select>
+</div>
 
-
-<label>Wallet Address</label>
-<input type="text" name="wallet_address">
-
-
+<div style="margin-bottom:1.4rem;">
 <label>Network / Bank</label>
-<input type="text" name="network">
+<input type="text" name="network" style="width:100%;padding:0.8rem;">
+</div>
 
-
+<div style="margin-bottom:1.4rem;">
 <label>Account Name / MOMO Name</label>
-<input type="text" name="account_name">
+<input type="text" name="account_name" style="width:100%;padding:0.8rem;">
+</div>
 
-
+<div style="margin-bottom:1.4rem;">
 <label>Account Number / MOMO Number</label>
-<input type="text" name="account_number">
+<input type="text" name="account_number" style="width:100%;padding:0.8rem;">
+</div>
 
+<div style="margin-bottom:1.4rem;">
+<label>Logo</label>
+<input type="file" name="logo">
+</div>
 
+<div style="margin-bottom:1.4rem;">
 <label>QR Code</label>
 <input type="file" name="qr_image">
+</div>
 
+<div style="margin-bottom:1.4rem;">
+<label>Withdrawal Fee</label>
+<input type="number" step="0.01" name="withdrawal_fee" value="0">
+</div>
 
-<label>Logo</label>
-<input type="file" name="image">
-
-
+<div style="margin-bottom:2rem;">
 <label>Status</label>
-<select name="status">
+<select name="status" style="width:100%;padding:0.8rem;">
 <option value="1">Active</option>
 <option value="0">Inactive</option>
 </select>
+</div>
 
-
-<button>Add Method</button>
+<button type="submit" class="btn" style="width:100%;padding:1rem;">
+Add Payment Method
+</button>
 
 </form>
 
+</div>
 
+<!-- LIST METHODS -->
 
-<h2 style="margin-top:50px;">Existing Methods</h2>
+<h2 style="text-align:center;margin:3rem 0 1.5rem;">Payment Methods</h2>
 
-<table border="1" width="100%">
+<div style="overflow-x:auto;">
 
-<tr>
+<table style="width:100%;max-width:1100px;margin:0 auto;border-collapse:separate;border-spacing:0 10px;">
 
+<thead>
+<tr style="background:#1f2937;">
 <th>ID</th>
 <th>Name</th>
 <th>Logo</th>
-<th>Crypto</th>
-<th>Type</th>
-<th>Network</th>
-<th>Account</th>
 <th>QR</th>
 <th>Status</th>
-<th>Action</th>
-
+<th>Actions</th>
 </tr>
+</thead>
 
+<tbody>
 
 <?php foreach($methods as $m): ?>
 
-<tr>
+<tr style="background:var(--card);">
 
-<td><?=$m['id']?></td>
+<td style="padding:1rem;text-align:center"><?= $m['id'] ?></td>
 
-<td><?=$m['name']?></td>
+<td style="padding:1rem"><?= htmlspecialchars($m['name']) ?></td>
 
-<td>
+<td style="padding:1rem;text-align:center">
 <?php if($m['image']): ?>
-<img src="/<?=$m['image']?>" width="40">
+<img src="../<?= $m['image'] ?>" style="max-width:60px;">
 <?php endif; ?>
 </td>
 
-<td><?=$m['crypto']?></td>
-
-<td><?=$m['type']?></td>
-
-<td><?=$m['network']?></td>
-
-<td><?=$m['account_number']?></td>
-
-<td>
+<td style="padding:1rem;text-align:center">
 <?php if($m['qr_image']): ?>
-<img src="/<?=$m['qr_image']?>" width="50">
+<img src="../<?= $m['qr_image'] ?>" style="max-width:60px;">
 <?php endif; ?>
 </td>
 
-<td><?=$m['status']?></td>
+<td style="padding:1rem;text-align:center">
+<?= $m['status'] ? 'Active':'Inactive' ?>
+</td>
 
-<td>
+<td style="padding:1rem;text-align:center">
 
-<form method="POST">
+<form method="POST" style="display:inline;">
 <input type="hidden" name="action" value="delete">
-<input type="hidden" name="id" value="<?=$m['id']?>">
-<button>Delete</button>
+<input type="hidden" name="id" value="<?= $m['id'] ?>">
+<button class="btn red">Delete</button>
 </form>
 
 </td>
@@ -312,8 +334,11 @@ $methods=$stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <?php endforeach; ?>
 
+</tbody>
 </table>
+
+</div>
 
 </main>
 
-<?php require_once __DIR__ . '/inc/footer.php'; ?>
+<?php require_once __DIR__.'/inc/footer.php'; ?>
