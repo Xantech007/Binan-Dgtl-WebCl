@@ -5,7 +5,7 @@ require_once __DIR__ . '/inc/header.php';
 $message = '';
 $error   = '';
 
-$upload_dir = __DIR__ . '/../../assets/images/qr/';
+$upload_dir = __DIR__ . '../assets/images/qr/';
 $upload_url_prefix = 'assets/images/qr/';   // path saved in DB
 
 // Ensure upload directory exists
