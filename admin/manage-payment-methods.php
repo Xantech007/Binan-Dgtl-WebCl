@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/inc/header.php';
-require_once __DIR__ . '/../inc/countries.php';
+require_once __DIR__ . '/inc/countries.php';
 
 $message='';
 $error='';
@@ -23,19 +23,19 @@ try{
 $name=trim($_POST['name']??'');
 $wallet_address=trim($_POST['wallet_address']??'');
 $status=(int)($_POST['status']??1);
-
 $withdrawal_fee=(float)($_POST['withdrawal_fee']??0);
-$crypto=(int)($_POST['crypto']??0);
 
-$type=$_POST['type']??'bank';
+$crypto=(int)($_POST['crypto']??0);
+$type=$_POST['type']??null;
+
 $network=trim($_POST['network']??'');
 $account_name=trim($_POST['account_name']??'');
 $account_number=trim($_POST['account_number']??'');
 
 $currency=trim($_POST['currency']??'USD');
 $conversion_rate=(float)($_POST['conversion_rate']??1);
-$active_country=trim($_POST['active_country']??'');
 $min_withdraw=(float)($_POST['min_withdraw']??0);
+$active_country=trim($_POST['active_country']??'');
 
 $qr_image_path=$_POST['current_qr_image']??'';
 $logo_path=$_POST['current_logo']??'';
@@ -102,32 +102,30 @@ $account_name,
 $account_number,
 $currency,
 $conversion_rate,
-$active_country,
 $min_withdraw,
+$active_country,
 $status,
 $withdrawal_fee
 ];
-
-/* ADD METHOD */
 
 if($action==="add"){
 
 $stmt=$pdo->prepare("
 INSERT INTO payment_methods
-(name,wallet_address,qr_image,image,crypto,type,network,account_name,account_number,currency,conversion_rate,active_country,min_withdraw,status,withdrawal_fee)
+(name,wallet_address,qr_image,image,crypto,type,network,account_name,account_number,currency,conversion_rate,min_withdraw,active_country,status,withdrawal_fee)
 VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
 ");
 
 $stmt->execute($data);
 
 $message="Payment method added successfully";
-}
 
-/* EDIT METHOD */
+}
 
 if($action==="edit"){
 
 $id=(int)$_POST['id'];
+
 $data[]=$id;
 
 $stmt=$pdo->prepare("
@@ -143,8 +141,8 @@ account_name=?,
 account_number=?,
 currency=?,
 conversion_rate=?,
-active_country=?,
 min_withdraw=?,
+active_country=?,
 status=?,
 withdrawal_fee=?
 WHERE id=?
@@ -153,14 +151,16 @@ WHERE id=?
 $stmt->execute($data);
 
 $message="Payment method updated";
+
 }
 
 }catch(Exception $e){
 $error=$e->getMessage();
 }
+
 }
 
-/* DELETE METHOD */
+/* DELETE */
 
 if(isset($_POST['action']) && $_POST['action']=="delete"){
 
@@ -182,6 +182,7 @@ $stmt=$pdo->prepare("DELETE FROM payment_methods WHERE id=?");
 $stmt->execute([$id]);
 
 $message="Payment method deleted";
+
 }
 
 /* LOAD METHODS */
@@ -195,21 +196,20 @@ $methods=$stmt->fetchAll(PDO::FETCH_ASSOC);
 <h1 style="text-align:center;margin:2.5rem 0 2rem;">Manage Payment Methods</h1>
 
 <?php if($message): ?>
-<div style="background:#238636;color:white;padding:1.2rem;border-radius:8px;margin-bottom:2rem;text-align:center;max-width:900px;margin:auto;">
+<div style="background:#238636;color:white;padding:1.2rem;border-radius:8px;margin-bottom:2rem;text-align:center;max-width:900px;margin-left:auto;margin-right:auto;">
 <?= htmlspecialchars($message) ?>
 </div>
 <?php endif; ?>
 
 <?php if($error): ?>
-<div style="background:#f85149;color:white;padding:1.2rem;border-radius:8px;margin-bottom:2rem;text-align:center;max-width:900px;margin:auto;">
+<div style="background:#f85149;color:white;padding:1.2rem;border-radius:8px;margin-bottom:2rem;text-align:center;max-width:900px;margin-left:auto;margin-right:auto;">
 <?= htmlspecialchars($error) ?>
 </div>
 <?php endif; ?>
 
-
 <!-- ADD METHOD -->
 
-<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:2rem;margin-bottom:3rem;max-width:900px;margin:auto;">
+<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:2rem;margin-bottom:3rem;max-width:900px;margin-left:auto;margin-right:auto;">
 
 <h2 style="margin-bottom:1.8rem;text-align:center;">Add Payment Method</h2>
 
@@ -217,98 +217,126 @@ $methods=$stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <input type="hidden" name="action" value="add">
 
+<div style="margin-bottom:1.4rem;">
 <label>Method Name</label>
-<input type="text" name="name" required style="width:100%;padding:0.8rem;margin-bottom:1rem;">
+<input type="text" name="name" required style="width:100%;padding:0.8rem;">
+</div>
 
+<div style="margin-bottom:1.4rem;">
 <label>Wallet Address</label>
-<input type="text" name="wallet_address" style="width:100%;padding:0.8rem;margin-bottom:1rem;">
+<input type="text" name="wallet_address" style="width:100%;padding:0.8rem;">
+</div>
 
+<div style="margin-bottom:1.4rem;">
 <label>Crypto?</label>
-<select name="crypto" style="width:100%;padding:0.8rem;margin-bottom:1rem;">
+<select name="crypto" style="width:100%;padding:0.8rem;">
 <option value="1">Yes</option>
 <option value="0">No</option>
 </select>
+</div>
 
+<div style="margin-bottom:1.4rem;">
 <label>Type</label>
-<select name="type" style="width:100%;padding:0.8rem;margin-bottom:1rem;">
+<select name="type" style="width:100%;padding:0.8rem;">
 <option value="bank">Bank</option>
 <option value="momo">MOMO</option>
 </select>
+</div>
 
+<div style="margin-bottom:1.4rem;">
 <label>Network / Bank</label>
-<input type="text" name="network" style="width:100%;padding:0.8rem;margin-bottom:1rem;">
+<input type="text" name="network" style="width:100%;padding:0.8rem;">
+</div>
 
+<div style="margin-bottom:1.4rem;">
 <label>Account Name</label>
-<input type="text" name="account_name" style="width:100%;padding:0.8rem;margin-bottom:1rem;">
+<input type="text" name="account_name" style="width:100%;padding:0.8rem;">
+</div>
 
+<div style="margin-bottom:1.4rem;">
 <label>Account Number</label>
-<input type="text" name="account_number" style="width:100%;padding:0.8rem;margin-bottom:1rem;">
+<input type="text" name="account_number" style="width:100%;padding:0.8rem;">
+</div>
 
+<div style="margin-bottom:1.4rem;">
 <label>Currency</label>
-<input type="text" name="currency" value="USD" style="width:100%;padding:0.8rem;margin-bottom:1rem;">
+<input type="text" name="currency" value="USD" style="width:100%;padding:0.8rem;">
+</div>
 
+<div style="margin-bottom:1.4rem;">
 <label>Conversion Rate</label>
-<input type="number" step="0.00000001" name="conversion_rate" value="1" style="width:100%;padding:0.8rem;margin-bottom:1rem;">
+<input type="number" step="0.00000001" name="conversion_rate" value="1" style="width:100%;padding:0.8rem;">
+</div>
 
+<div style="margin-bottom:1.4rem;">
 <label>Minimum Withdraw</label>
-<input type="number" step="0.00000001" name="min_withdraw" value="0" style="width:100%;padding:0.8rem;margin-bottom:1rem;">
+<input type="number" step="0.00000001" name="min_withdraw" value="0" style="width:100%;padding:0.8rem;">
+</div>
 
+<div style="margin-bottom:1.4rem;">
 <label>Active Country</label>
-<select name="active_country" style="width:100%;padding:0.8rem;margin-bottom:1rem;">
+
+<select name="active_country" style="width:100%;padding:0.8rem;">
 <option value="">All Countries</option>
+
 <?php foreach($countries as $c): ?>
 <option value="<?= htmlspecialchars($c) ?>">
 <?= htmlspecialchars($c) ?>
 </option>
 <?php endforeach; ?>
+
 </select>
 
+</div>
+
+<div style="margin-bottom:1.4rem;">
 <label>Logo</label>
-<input type="file" name="logo" style="margin-bottom:1rem;">
+<input type="file" name="logo">
+</div>
 
+<div style="margin-bottom:1.4rem;">
 <label>QR Code</label>
-<input type="file" name="qr_image" style="margin-bottom:1rem;">
+<input type="file" name="qr_image">
+</div>
 
+<div style="margin-bottom:1.4rem;">
 <label>Withdrawal Fee</label>
-<input type="number" step="0.01" name="withdrawal_fee" value="0" style="width:100%;padding:0.8rem;margin-bottom:1rem;">
+<input type="number" step="0.01" name="withdrawal_fee" value="0">
+</div>
 
+<div style="margin-bottom:2rem;">
 <label>Status</label>
-<select name="status" style="width:100%;padding:0.8rem;margin-bottom:1.5rem;">
+<select name="status" style="width:100%;padding:0.8rem;">
 <option value="1">Active</option>
 <option value="0">Inactive</option>
 </select>
+</div>
 
-<button class="btn" style="width:100%;padding:1rem;">Add Payment Method</button>
+<button type="submit" class="btn" style="width:100%;padding:1rem;">
+Add Payment Method
+</button>
 
 </form>
 
 </div>
 
 
-<!-- LIST METHODS -->
-
 <h2 style="text-align:center;margin:3rem 0 1.5rem;">Payment Methods</h2>
 
 <div style="overflow-x:auto;">
 
-<table style="width:100%;max-width:1400px;margin:0 auto;border-collapse:separate;border-spacing:0 10px;">
+<table style="width:100%;max-width:1300px;margin:0 auto;border-collapse:separate;border-spacing:0 10px;">
 
 <thead>
 <tr style="background:#1f2937;">
 <th>ID</th>
 <th>Name</th>
-<th>Logo</th>
-<th>QR</th>
-<th>Crypto</th>
-<th>Type</th>
-<th>Network / Bank</th>
-<th>Account Name</th>
-<th>Account Number</th>
 <th>Currency</th>
 <th>Rate</th>
 <th>Min Withdraw</th>
-<th>Withdraw Fee</th>
 <th>Country</th>
+<th>Logo</th>
+<th>QR</th>
 <th>Status</th>
 <th>Actions</th>
 </tr>
@@ -320,12 +348,18 @@ $methods=$stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <tr style="background:var(--card);">
 
-<td style="padding:1rem;text-align:center">
-<?= $m['id'] ?>
-</td>
+<td style="padding:1rem;text-align:center"><?= $m['id'] ?></td>
 
-<td style="padding:1rem">
-<?= htmlspecialchars($m['name']) ?>
+<td style="padding:1rem"><?= htmlspecialchars($m['name']) ?></td>
+
+<td style="padding:1rem;text-align:center"><?= htmlspecialchars($m['currency']) ?></td>
+
+<td style="padding:1rem;text-align:center"><?= $m['conversion_rate'] ?></td>
+
+<td style="padding:1rem;text-align:center"><?= $m['min_withdraw'] ?></td>
+
+<td style="padding:1rem;text-align:center">
+<?= $m['active_country'] ?: 'All' ?>
 </td>
 
 <td style="padding:1rem;text-align:center">
@@ -338,46 +372,6 @@ $methods=$stmt->fetchAll(PDO::FETCH_ASSOC);
 <?php if($m['qr_image']): ?>
 <img src="../<?= $m['qr_image'] ?>" style="max-width:60px;">
 <?php endif; ?>
-</td>
-
-<td style="padding:1rem;text-align:center">
-<?= $m['crypto'] ? "Yes":"No" ?>
-</td>
-
-<td style="padding:1rem;text-align:center">
-<?= htmlspecialchars($m['type']) ?>
-</td>
-
-<td style="padding:1rem">
-<?= htmlspecialchars($m['network']) ?>
-</td>
-
-<td style="padding:1rem">
-<?= htmlspecialchars($m['account_name']) ?>
-</td>
-
-<td style="padding:1rem">
-<?= htmlspecialchars($m['account_number']) ?>
-</td>
-
-<td style="padding:1rem;text-align:center">
-<?= htmlspecialchars($m['currency']) ?>
-</td>
-
-<td style="padding:1rem;text-align:center">
-<?= number_format($m['conversion_rate'],8) ?>
-</td>
-
-<td style="padding:1rem;text-align:center">
-<?= number_format($m['min_withdraw'],2) ?>
-</td>
-
-<td style="padding:1rem;text-align:center">
-<?= number_format($m['withdrawal_fee'],2) ?>
-</td>
-
-<td style="padding:1rem;text-align:center">
-<?= $m['active_country'] ?: "All" ?>
 </td>
 
 <td style="padding:1rem;text-align:center">
@@ -413,7 +407,12 @@ Edit
 <script>
 
 function openEditModal(m){
-alert("Edit modal code unchanged — data loaded successfully");
+
+document.getElementById("editModal").style.display="flex";
+
+document.getElementById("edit_id").value=m.id;
+document.getElementById("edit_name").value=m.name;
+
 }
 
 </script>
