@@ -235,7 +235,6 @@ $methods=$stmt->fetchAll(PDO::FETCH_ASSOC);
 <div style="margin-bottom:1.4rem;">
 <label>Type</label>
 <select name="type" style="width:100%;padding:0.8rem;">
-<option value="">None</option>
 <option value="bank">Bank</option>
 <option value="momo">MOMO</option>
 </select>
@@ -437,7 +436,6 @@ Edit
 <div style="margin-bottom:1.4rem;">
 <label>Type</label>
 <select name="type" id="edit_type" style="width:100%;padding:0.8rem;">
-<option value="">None</option>
 <option value="bank">Bank</option>
 <option value="momo">MOMO</option>
 </select>
