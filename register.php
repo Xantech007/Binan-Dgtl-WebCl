@@ -37,16 +37,15 @@ $confirm=$_POST['confirm'];
 $invite=trim($_POST['invite']);
 $country=$_POST['country'];
 
-if(empty($invite)){
-$msg="Invitation code is required";
-
-}elseif($password!=$confirm){
+if($password!=$confirm){
 
 $msg="Passwords do not match";
 
 }else{
 
-/* CHECK IF INVITE CODE EXISTS */
+$referred_by = null;
+
+if(!empty($invite)){
 
 $ref=$pdo->prepare("SELECT email,phone FROM users WHERE referral_code=?");
 $ref->execute([$invite]);
@@ -58,9 +57,10 @@ $msg="Invalid invitation code";
 
 }else{
 
-/* GET REFERRER EMAIL OR PHONE */
-
 $referred_by = !empty($referrer['email']) ? $referrer['email'] : $referrer['phone'];
+
+}
+}
 
 /* GENERATE UNIQUE 6 DIGIT REFERRAL CODE */
 
@@ -343,7 +343,7 @@ echo "<option value=\"$country\" $selected>$country</option>";
 <div class="input">
 <i class="fa fa-thumbs-up"></i>
 <input type="text" name="invite" placeholder="Invitation Code"
-value="<?= $invite_code ?>" required>
+value="<?= $invite_code ?>">
 </div>
 
 <button type="submit" class="btn signup">Create Account</button>
@@ -398,7 +398,7 @@ echo "<option value=\"$country\" $selected>$country</option>";
 <div class="input">
 <i class="fa fa-thumbs-up"></i>
 <input type="text" name="invite" placeholder="Invitation Code"
-value="<?= $invite_code ?>" required>
+value="<?= $invite_code ?>">
 </div>
 
 <button type="submit" class="btn signup">Create Account</button>
