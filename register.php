@@ -31,11 +31,11 @@ $invite_code = isset($_GET['invite']) ? htmlspecialchars($_GET['invite']) : "";
 
 if($_SERVER["REQUEST_METHOD"]=="POST"){
 
-$type=$_POST['type'];
-$password=$_POST['password'];
-$confirm=$_POST['confirm'];
-$invite=trim($_POST['invite']);
-$country=$_POST['country'];
+$type=$_POST['type'] ?? '';
+$password=$_POST['password'] ?? '';
+$confirm=$_POST['confirm'] ?? '';
+$invite=trim($_POST['invite'] ?? '');
+$country=$_POST['country'] ?? '';
 
 if($password!=$confirm){
 
@@ -44,6 +44,8 @@ $msg="Passwords do not match";
 }else{
 
 $referred_by = null;
+
+/* CHECK INVITE ONLY IF PROVIDED */
 
 if(!empty($invite)){
 
@@ -60,6 +62,12 @@ $msg="Invalid invitation code";
 $referred_by = !empty($referrer['email']) ? $referrer['email'] : $referrer['phone'];
 
 }
+
+}
+
+/* STOP IF ERROR */
+if(!empty($msg)){
+return;
 }
 
 /* GENERATE UNIQUE 6 DIGIT REFERRAL CODE */
@@ -77,7 +85,7 @@ $hash=password_hash($password,PASSWORD_DEFAULT);
 
 if($type=="email"){
 
-$email=$_POST['email'];
+$email=$_POST['email'] ?? '';
 
 $check=$pdo->prepare("SELECT id FROM users WHERE email=?");
 $check->execute([$email]);
@@ -96,7 +104,7 @@ VALUES(?,?,?,?,?,?,?,?)"
 $stmt->execute([
 $email,
 $hash,
-$invite,
+$invite ?: null,
 $new_referral,
 $referred_by,
 $country,
@@ -111,7 +119,7 @@ exit;
 
 }else{
 
-$phone=$_POST['phone'];
+$phone=$_POST['phone'] ?? '';
 
 $check=$pdo->prepare("SELECT id FROM users WHERE phone=?");
 $check->execute([$phone]);
@@ -130,7 +138,7 @@ VALUES(?,?,?,?,?,?,?,?)"
 $stmt->execute([
 $phone,
 $hash,
-$invite,
+$invite ?: null,
 $new_referral,
 $referred_by,
 $country,
@@ -140,8 +148,6 @@ $country,
 
 header("Location: login.php");
 exit;
-
-}
 
 }
 
