@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/inc/header.php';
+require_once __DIR__ . '/inc/countries.php';
 
 $message='';
 $error='';
@@ -282,7 +283,18 @@ $methods=$stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <div style="margin-bottom:1.4rem;">
 <label>Active Country (optional)</label>
-<input type="text" name="active_country" placeholder="Nigeria,Ghana or leave empty" style="width:100%;padding:0.8rem;">
+<select name="active_country" style="width:100%;padding:0.8rem;">
+<option value="">All Countries</option>
+
+<?php foreach($countries as $country): ?>
+
+<option value="<?= htmlspecialchars($country) ?>">
+<?= htmlspecialchars($country) ?>
+</option>
+
+<?php endforeach; ?>
+
+</select>
 </div>
 
 <div style="margin-bottom:1.4rem;">
@@ -485,7 +497,19 @@ Edit
 
 <div style="margin-bottom:1.4rem;">
 <label>Active Country</label>
-<input type="text" name="active_country" id="edit_country" style="width:100%;padding:0.8rem;">
+<select name="active_country" id="edit_country" style="width:100%;padding:0.8rem;">
+
+<option value="">All Countries</option>
+
+<?php foreach($countries as $country): ?>
+
+<option value="<?= htmlspecialchars($country) ?>">
+<?= htmlspecialchars($country) ?>
+</option>
+
+<?php endforeach; ?>
+
+</select>
 </div>
 
 <div style="margin-bottom:1.4rem;">
