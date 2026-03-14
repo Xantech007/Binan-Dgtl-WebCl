@@ -1093,11 +1093,11 @@ opacity:1;
 
 /* ================= CONTENT ================= */
 
-.task-content{
+.task-tab-content{
 display:none;
 }
 
-.task-content.active{
+.task-tab-content.active{
 display:block;
 }
 
