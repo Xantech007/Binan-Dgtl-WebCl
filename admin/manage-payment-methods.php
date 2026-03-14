@@ -221,13 +221,17 @@ $methods=$stmt->fetchAll(PDO::FETCH_ASSOC);
 </div>
 
 <div style="margin-bottom:1.4rem;">
+<div id="walletSection">
+
 <label>Wallet Address</label>
 <input type="text" name="wallet_address" style="width:100%;padding:0.8rem;">
+
+</div>
 </div>
 
 <div style="margin-bottom:1.4rem;">
 <label>Crypto?</label>
-<select name="crypto" style="width:100%;padding:0.8rem;">
+<select name="crypto" id="cryptoSelect" style="width:100%;padding:0.8rem;">
 <option value="1">Yes</option>
 <option value="0">No</option>
 </select>
@@ -242,6 +246,9 @@ $methods=$stmt->fetchAll(PDO::FETCH_ASSOC);
 </div>
 
 <div style="margin-bottom:1.4rem;">
+<div id="bankSection">
+
+<div style="margin-bottom:1.4rem;">
 <label>Network / Bank</label>
 <input type="text" name="network" style="width:100%;padding:0.8rem;">
 </div>
@@ -254,6 +261,9 @@ $methods=$stmt->fetchAll(PDO::FETCH_ASSOC);
 <div style="margin-bottom:1.4rem;">
 <label>Account Number / MOMO Number</label>
 <input type="text" name="account_number" style="width:100%;padding:0.8rem;">
+</div>
+
+</div>
 </div>
 
 <div style="margin-bottom:1.4rem;">
@@ -278,7 +288,11 @@ $methods=$stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <div style="margin-bottom:1.4rem;">
 <label>Conversion Rate</label>
-<input type="number" step="0.00000001" name="conversion_rate" value="1" style="width:100%;padding:0.8rem;">
+<input type="number" step="0.00000001" name="conversion_rate" id="rateInput" value="1" style="width:100%;padding:0.8rem;">
+
+<div style="margin-top:6px;font-size:13px;color:#9ca3af;">
+Preview: <span id="conversionPreview">1 USD = 1</span>
+</div>
 </div>
 
 <div style="margin-bottom:1.4rem;">
@@ -434,7 +448,9 @@ Edit
 
 <div style="margin-bottom:1.4rem;">
 <label>Wallet Address</label>
+<div id="editWalletSection">
 <input type="text" name="wallet_address" id="edit_wallet" style="width:100%;padding:0.8rem;">
+</div>
 </div>
 
 <div style="margin-bottom:1.4rem;">
@@ -442,6 +458,7 @@ Edit
 <select name="crypto" id="edit_crypto" style="width:100%;padding:0.8rem;">
 <option value="1">Yes</option>
 <option value="0">No</option>
+</select>
 </select>
 </div>
 
@@ -454,18 +471,15 @@ Edit
 </div>
 
 <div style="margin-bottom:1.4rem;">
-<label>Network / Bank</label>
+<div id="editBankSection">
+
 <input type="text" name="network" id="edit_network" style="width:100%;padding:0.8rem;">
-</div>
 
-<div style="margin-bottom:1.4rem;">
-<label>Account Name</label>
 <input type="text" name="account_name" id="edit_account_name" style="width:100%;padding:0.8rem;">
-</div>
 
-<div style="margin-bottom:1.4rem;">
-<label>Account Number</label>
 <input type="text" name="account_number" id="edit_account_number" style="width:100%;padding:0.8rem;">
+
+</div>
 </div>
 
 <div style="margin-bottom:1.4rem;">
@@ -493,6 +507,10 @@ Edit
 <div style="margin-bottom:1.4rem;">
 <label>Conversion Rate</label>
 <input type="number" step="0.00000001" name="conversion_rate" id="edit_rate" style="width:100%;padding:0.8rem;">
+
+<div style="margin-top:6px;font-size:13px;color:#9ca3af;">
+Preview: <span id="editConversionPreview">1 USD = 1</span>
+</div>
 </div>
 
 <div style="margin-bottom:1.4rem;">
@@ -567,12 +585,94 @@ m.image ? `<img src="../${m.image}" style="max-width:80px">` : "No logo";
 document.getElementById("edit_qr_preview").innerHTML=
 m.qr_image ? `<img src="../${m.qr_image}" style="max-width:80px">` : "No QR";
 
+toggleEditFields();
+
 }
 
 function closeEditModal(){
 document.getElementById("editModal").style.display="none";
 }
 
+/* AUTO SHOW/HIDE FIELDS */
+
+const cryptoSelect = document.getElementById("cryptoSelect");
+const walletSection = document.getElementById("walletSection");
+const bankSection = document.getElementById("bankSection");
+
+function toggleFields(){
+
+if(!cryptoSelect) return;
+
+if(cryptoSelect.value == "1"){
+walletSection.style.display="block";
+bankSection.style.display="none";
+}else{
+walletSection.style.display="none";
+bankSection.style.display="block";
+}
+
+}
+
+cryptoSelect.addEventListener("change",toggleFields);
+toggleFields();
+
+
+
+/* EDIT MODAL TOGGLE */
+
+const editCrypto = document.getElementById("edit_crypto");
+const editWallet = document.getElementById("editWalletSection");
+const editBank = document.getElementById("editBankSection");
+
+function toggleEditFields(){
+
+if(editCrypto.value == "1"){
+editWallet.style.display="block";
+editBank.style.display="none";
+}else{
+editWallet.style.display="none";
+editBank.style.display="block";
+}
+
+}
+
+if(editCrypto){
+editCrypto.addEventListener("change",toggleEditFields);
+}
+
+
+
+/* LIVE CONVERSION PREVIEW */
+
+const rateInput = document.getElementById("rateInput");
+const preview = document.getElementById("conversionPreview");
+
+if(rateInput){
+rateInput.addEventListener("input", function(){
+
+let rate = parseFloat(this.value) || 1;
+
+preview.innerText = "1 USD = " + rate;
+
+});
+}
+
+
+/* EDIT PREVIEW */
+
+const editRate = document.getElementById("edit_rate");
+const editPreview = document.getElementById("editConversionPreview");
+
+if(editRate){
+editRate.addEventListener("input", function(){
+
+let rate = parseFloat(this.value) || 1;
+
+editPreview.innerText = "1 USD = " + rate;
+
+});
+}
+  
 </script>
 
 <?php require_once __DIR__.'/inc/footer.php'; ?>
