@@ -116,9 +116,9 @@ $recharge_amount = $recharge['paid_amount'] ?? 0;
 <i class="fa-solid fa-angle-right"></i>
 </a>
 
-<a href="changePwd.php" class="menu-item">
-<i class="fa-solid fa-key"></i>
-<span>Change Password</span>
+<a href="edit-profile.php" class="menu-item">
+<i class="fa-solid fa-user"></i>
+<span>Edit Profile</span>
 <i class="fa-solid fa-angle-right"></i>
 </a>
 
