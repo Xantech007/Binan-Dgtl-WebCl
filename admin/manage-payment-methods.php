@@ -25,10 +25,15 @@ $status=(int)($_POST['status']??1);
 $withdrawal_fee=(float)($_POST['withdrawal_fee']??0);
 
 $crypto=(int)($_POST['crypto']??0);
-$type=$_POST['type']??null;
+$type=$_POST['type']??'bank';
 $network=trim($_POST['network']??'');
 $account_name=trim($_POST['account_name']??'');
 $account_number=trim($_POST['account_number']??'');
+
+$currency=trim($_POST['currency']??'USD');
+$conversion_rate=(float)($_POST['conversion_rate']??1);
+$active_country=trim($_POST['active_country']??'');
+$min_withdraw=(float)($_POST['min_withdraw']??0);
 
 $qr_image_path=$_POST['current_qr_image']??'';
 $logo_path=$_POST['current_logo']??'';
@@ -93,6 +98,10 @@ $type,
 $network,
 $account_name,
 $account_number,
+$currency,
+$conversion_rate,
+$active_country,
+$min_withdraw,
 $status,
 $withdrawal_fee
 ];
@@ -101,8 +110,8 @@ if($action==="add"){
 
 $stmt=$pdo->prepare("
 INSERT INTO payment_methods
-(name,wallet_address,qr_image,image,crypto,type,network,account_name,account_number,status,withdrawal_fee)
-VALUES(?,?,?,?,?,?,?,?,?,?,?)
+(name,wallet_address,qr_image,image,crypto,type,network,account_name,account_number,currency,conversion_rate,active_country,min_withdraw,status,withdrawal_fee)
+VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
 ");
 
 $stmt->execute($data);
@@ -128,6 +137,10 @@ type=?,
 network=?,
 account_name=?,
 account_number=?,
+currency=?,
+conversion_rate=?,
+active_country=?,
+min_withdraw=?,
 status=?,
 withdrawal_fee=?
 WHERE id=?
@@ -208,6 +221,26 @@ $methods=$stmt->fetchAll(PDO::FETCH_ASSOC);
 </div>
 
 <div style="margin-bottom:1.4rem;">
+<label>Currency</label>
+<input type="text" name="currency" value="USD" style="width:100%;padding:0.8rem;">
+</div>
+
+<div style="margin-bottom:1.4rem;">
+<label>Conversion Rate</label>
+<input type="number" step="0.00000001" name="conversion_rate" value="1" style="width:100%;padding:0.8rem;">
+</div>
+
+<div style="margin-bottom:1.4rem;">
+<label>Active Country (optional)</label>
+<input type="text" name="active_country" placeholder="Nigeria, Ghana etc" style="width:100%;padding:0.8rem;">
+</div>
+
+<div style="margin-bottom:1.4rem;">
+<label>Minimum Withdrawal</label>
+<input type="number" step="0.01" name="min_withdraw" value="0" style="width:100%;padding:0.8rem;">
+</div>
+
+<div style="margin-bottom:1.4rem;">
 <label>Wallet Address</label>
 <input type="text" name="wallet_address" style="width:100%;padding:0.8rem;">
 </div>
@@ -223,7 +256,6 @@ $methods=$stmt->fetchAll(PDO::FETCH_ASSOC);
 <div style="margin-bottom:1.4rem;">
 <label>Type</label>
 <select name="type" style="width:100%;padding:0.8rem;">
-<option value="">None</option>
 <option value="bank">Bank</option>
 <option value="momo">MOMO</option>
 </select>
@@ -287,8 +319,10 @@ Add Payment Method
 <tr style="background:#1f2937;">
 <th>ID</th>
 <th>Name</th>
-<th>Logo</th>
-<th>QR</th>
+<th>Currency</th>
+<th>Rate</th>
+<th>Min Withdraw</th>
+<th>Country</th>
 <th>Status</th>
 <th>Actions</th>
 </tr>
@@ -304,17 +338,13 @@ Add Payment Method
 
 <td style="padding:1rem"><?= htmlspecialchars($m['name']) ?></td>
 
-<td style="padding:1rem;text-align:center">
-<?php if($m['image']): ?>
-<img src="../<?= $m['image'] ?>" style="max-width:60px;">
-<?php endif; ?>
-</td>
+<td style="padding:1rem"><?= htmlspecialchars($m['currency']) ?></td>
 
-<td style="padding:1rem;text-align:center">
-<?php if($m['qr_image']): ?>
-<img src="../<?= $m['qr_image'] ?>" style="max-width:60px;">
-<?php endif; ?>
-</td>
+<td style="padding:1rem"><?= number_format($m['conversion_rate'],6) ?></td>
+
+<td style="padding:1rem"><?= number_format($m['min_withdraw'],2) ?></td>
+
+<td style="padding:1rem"><?= $m['active_country'] ?: 'All' ?></td>
 
 <td style="padding:1rem;text-align:center">
 <?= $m['status'] ? 'Active':'Inactive' ?>
@@ -344,134 +374,6 @@ Edit
 
 </div>
 
-<!-- EDIT MODAL -->
-
-<div id="editModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);align-items:center;justify-content:center;z-index:9999;overflow-y:auto;padding:20px;">
-
-<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;width:90%;max-width:800px;padding:2rem;position:relative;max-height:90vh;overflow-y:auto;">
-
-<button onclick="closeEditModal()" style="position:absolute;right:15px;top:10px;font-size:22px;background:none;border:none;color:white;cursor:pointer">×</button>
-
-<h2 style="text-align:center;margin-bottom:1.5rem;">Edit Payment Method</h2>
-
-<form method="POST" enctype="multipart/form-data">
-
-<input type="hidden" name="action" value="edit">
-<input type="hidden" name="id" id="edit_id">
-<input type="hidden" name="current_qr_image" id="edit_current_qr">
-<input type="hidden" name="current_logo" id="edit_current_logo">
-
-<div style="margin-bottom:1.4rem;">
-<label>Method Name</label>
-<input type="text" name="name" id="edit_name" style="width:100%;padding:0.8rem;">
-</div>
-
-<div style="margin-bottom:1.4rem;">
-<label>Wallet Address</label>
-<input type="text" name="wallet_address" id="edit_wallet" style="width:100%;padding:0.8rem;">
-</div>
-
-<div style="margin-bottom:1.4rem;">
-<label>Crypto?</label>
-<select name="crypto" id="edit_crypto" style="width:100%;padding:0.8rem;">
-<option value="1">Yes</option>
-<option value="0">No</option>
-</select>
-</div>
-
-<div style="margin-bottom:1.4rem;">
-<label>Type</label>
-<select name="type" id="edit_type" style="width:100%;padding:0.8rem;">
-<option value="">None</option>
-<option value="bank">Bank</option>
-<option value="momo">MOMO</option>
-</select>
-</div>
-
-<div style="margin-bottom:1.4rem;">
-<label>Network / Bank</label>
-<input type="text" name="network" id="edit_network" style="width:100%;padding:0.8rem;">
-</div>
-
-<div style="margin-bottom:1.4rem;">
-<label>Account Name</label>
-<input type="text" name="account_name" id="edit_account_name" style="width:100%;padding:0.8rem;">
-</div>
-
-<div style="margin-bottom:1.4rem;">
-<label>Account Number</label>
-<input type="text" name="account_number" id="edit_account_number" style="width:100%;padding:0.8rem;">
-</div>
-
-<div style="margin-bottom:1.4rem;">
-<label>Current Logo</label>
-<div id="edit_logo_preview"></div>
-<input type="file" name="logo">
-</div>
-
-<div style="margin-bottom:1.4rem;">
-<label>Current QR</label>
-<div id="edit_qr_preview"></div>
-<input type="file" name="qr_image">
-</div>
-
-<div style="margin-bottom:1.4rem;">
-<label>Withdrawal Fee</label>
-<input type="number" step="0.01" name="withdrawal_fee" id="edit_fee" style="width:100%;padding:0.8rem;">
-</div>
-
-<div style="margin-bottom:1.4rem;">
-<label>Status</label>
-<select name="status" id="edit_status" style="width:100%;padding:0.8rem;">
-<option value="1">Active</option>
-<option value="0">Inactive</option>
-</select>
-</div>
-
-<button class="btn" style="width:100%;padding:1rem;">
-Save Changes
-</button>
-
-</form>
-
-</div>
-
-</div>
-  
 </main>
-
-<script>
-
-function openEditModal(m){
-
-document.getElementById("editModal").style.display="flex";
-
-document.getElementById("edit_id").value=m.id;
-document.getElementById("edit_name").value=m.name;
-document.getElementById("edit_wallet").value=m.wallet_address || "";
-document.getElementById("edit_crypto").value=m.crypto;
-document.getElementById("edit_type").value=m.type || "";
-document.getElementById("edit_network").value=m.network || "";
-document.getElementById("edit_account_name").value=m.account_name || "";
-document.getElementById("edit_account_number").value=m.account_number || "";
-document.getElementById("edit_fee").value=m.withdrawal_fee || "0";
-document.getElementById("edit_status").value=m.status;
-
-document.getElementById("edit_current_qr").value=m.qr_image || "";
-document.getElementById("edit_current_logo").value=m.image || "";
-
-document.getElementById("edit_logo_preview").innerHTML=
-m.image ? `<img src="../${m.image}" style="max-width:80px">` : "No logo";
-
-document.getElementById("edit_qr_preview").innerHTML=
-m.qr_image ? `<img src="../${m.qr_image}" style="max-width:80px">` : "No QR";
-
-}
-
-function closeEditModal(){
-document.getElementById("editModal").style.display="none";
-}
-
-</script>
 
 <?php require_once __DIR__.'/inc/footer.php'; ?>
