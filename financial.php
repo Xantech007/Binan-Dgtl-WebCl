@@ -209,8 +209,7 @@ echo "Rejected";
 <br>
 
 <small>
-Received: <?php echo number_format($row['received'],2); ?>
-<?php echo htmlspecialchars($row['currency'] ?? 'USD'); ?>
+Received: <?php echo number_format($row['received'],2).' '.htmlspecialchars($row['currency'] ?? 'USD'); ?>
 </small>
 
 </div>
