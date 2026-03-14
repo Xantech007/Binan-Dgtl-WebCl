@@ -408,7 +408,7 @@ cursor:not-allowed;
 .member-track{
     display:flex;
     flex-direction:column;
-    animation:scrollUp 80s linear infinite;
+    animation:scrollUp 70s linear infinite;
 }
 
 .member-row{
