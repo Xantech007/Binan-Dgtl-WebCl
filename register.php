@@ -50,7 +50,6 @@ $msg="Passwords do not match";
 $referred_by = null;
 
 /* CHECK INVITE ONLY IF PROVIDED */
-
 if(!empty($invite)){
 
 $ref=$pdo->prepare("SELECT email,phone FROM users WHERE referral_code=?");
@@ -71,13 +70,10 @@ $referred_by = !empty($referrer['email'])
 
 }
 
-/* STOP REGISTRATION IF ERROR */
-if(!empty($msg)){
-return;
-}
+/* ONLY CONTINUE IF NO ERROR */
+if(empty($msg)){
 
 /* GENERATE UNIQUE REFERRAL CODE */
-
 do{
 
 $new_referral = rand(100000,999999);
@@ -154,6 +150,8 @@ $country,
 
 header("Location: login.php");
 exit;
+
+}
 
 }
 
