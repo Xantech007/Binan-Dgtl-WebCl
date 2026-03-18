@@ -147,7 +147,7 @@ unset($_SESSION['withdraw_msg']);
         </div>
 
         <div class="action-item">
-            <a href="application/binance-digital_v001-1.apk" download>
+            <a href="application/binance-digital_v001-1.apk">
                 <div class="icon-circle">
                     <i class="fa-solid fa-mobile-screen"></i>
                 </div>
