@@ -838,6 +838,12 @@ text-align:center;
 font-size:14px;
 }
 
+.copy-number{
+cursor:pointer;
+user-select:none;
+font-weight:600;
+}
+
 /* ================= WITHDRAW ================= */
 
 .withdraw-header{
