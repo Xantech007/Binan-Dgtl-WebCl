@@ -533,7 +533,7 @@ border-radius:10px;
 /* Prevent content from hiding behind fixed header + footer */
 body {
     padding-top: 75px;   /* adjust to match your header height */
-    padding-bottom: 90px; /* adjust to match your footer height */
+    padding-bottom: 140px; /* adjust to match your footer height */
 }
 
 
