@@ -109,5 +109,32 @@ autoDisplay:false
 
 <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
+<script>
+let deferredPrompt;
+
+window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    console.log("PWA install ready");
+});
+
+function installApp(){
+    if(deferredPrompt){
+        deferredPrompt.prompt();
+
+        deferredPrompt.userChoice.then((choiceResult) => {
+            if(choiceResult.outcome === "accepted"){
+                console.log("User installed the app");
+            } else {
+                console.log("User dismissed install");
+            }
+            deferredPrompt = null;
+        });
+    } else {
+        alert("Install not available yet. Use Chrome and visit again.");
+    }
+}
+</script>
+
 </body>
 </html>
