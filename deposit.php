@@ -148,10 +148,15 @@ readonly>
 <?php echo htmlspecialchars($method['account_name']); ?>
 </p>
 
-<p><strong>
+<p>
+<strong>
 <?php echo ($method['type']=="bank") ? "Account Number" : "MOMO Number"; ?>
 :</strong>
+
+<span id="accountNumber" class="copy-number">
 <?php echo htmlspecialchars($method['account_number']); ?>
+</span>
+
 </p>
 
 </div>
@@ -217,6 +222,40 @@ Note. Send the payment using MOMO to the number above and upload proof.
 <?php include "inc/footer.php"; ?>
 
 <script>
+
+let pressTimer;
+const accountEl = document.getElementById("accountNumber");
+
+if(accountEl){
+
+accountEl.addEventListener("touchstart", startPress);
+accountEl.addEventListener("mousedown", startPress);
+
+accountEl.addEventListener("touchend", cancelPress);
+accountEl.addEventListener("mouseup", cancelPress);
+accountEl.addEventListener("mouseleave", cancelPress);
+
+function startPress(){
+    pressTimer = setTimeout(copyAccountNumber, 1500); // 1.5 seconds
+}
+
+function cancelPress(){
+    clearTimeout(pressTimer);
+}
+
+function copyAccountNumber(){
+
+    const text = accountEl.innerText.trim();
+
+    navigator.clipboard.writeText(text).then(() => {
+        alert("Account number copied");
+    });
+
+}
+
+}
+
+  
 
 function copyAddress(){
 
