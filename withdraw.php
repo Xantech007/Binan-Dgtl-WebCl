@@ -83,8 +83,8 @@ if($_SERVER['REQUEST_METHOD']=="POST"){
         $pdo->prepare("UPDATE users SET balance=balance-? WHERE id=?")
              ->execute([$amount_usd,$user_id]);
 
-        /* REDIRECT TO RECEIPT WITH USER ID + WITHDRAWAL ID */
-        header("Location: withdraw-receipt.php?user_id=$user_id&withdrawal_id=$withdrawal_id");
+        /* REDIRECT TO RECEIPT WITH WITHDRAWAL ID */
+        header("Location: withdraw-receipt.php?withdrawal_id=$withdrawal_id");
         exit;
     }
 }
