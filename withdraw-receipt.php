@@ -8,38 +8,54 @@ if(!isset($_SESSION['user_id'])){
 }
 
 $user_id = $_SESSION['user_id'];
+$error = "";
+$withdrawal = null;
+$email = "N/A";
 
-// Security: must have both parameters and user_id must match session
-if(!isset($_GET['withdrawal_id']) || !isset($_GET['user_id']) || (int)$_GET['user_id'] !== $user_id){
-    header("Location: index.php");
-    exit;
+/* VALIDATE REQUEST */
+if(!isset($_GET['withdrawal_id'])){
+    $error = "Invalid request: Missing withdrawal ID.";
+} else {
+    $withdrawal_id = (int)$_GET['withdrawal_id'];
+
+    /* FETCH WITHDRAWAL (SECURE: tied to session user) */
+    $stmt = $pdo->prepare("
+        SELECT * FROM withdrawals 
+        WHERE id = ? AND user_id = ?
+    ");
+    $stmt->execute([$withdrawal_id, $user_id]);
+    $withdrawal = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if(!$withdrawal){
+        $error = "Receipt not found or access denied.";
+    }
 }
 
-$withdrawal_id = (int)$_GET['withdrawal_id'];
-
-// Fetch the exact withdrawal (only for this user)
-$stmt = $pdo->prepare("
-    SELECT * FROM withdrawals 
-    WHERE id = ? AND user_id = ?
-");
-$stmt->execute([$withdrawal_id, $user_id]);
-$withdrawal = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if(!$withdrawal){
-    $_SESSION['error_msg'] = "Receipt not found or access denied.";
-    header("Location: index.php");
-    exit;
+/* FETCH USER EMAIL */
+if(empty($error)){
+    $stmt = $pdo->prepare("SELECT email FROM users WHERE id = ?");
+    $stmt->execute([$user_id]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    $email = $user['email'] ?? 'N/A';
 }
-
-// Get user email for display
-$stmt = $pdo->prepare("SELECT email FROM users WHERE id = ?");
-$stmt->execute([$user_id]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
-$email = $user['email'] ?? 'N/A';
 ?>
+
 <?php include "inc/header.php"; ?>
 
-<div style="max-width: 700px; margin: 40px auto; padding: 30px; border: 2px solid #000; border-radius: 10px; background: #fff; font-family: Arial, sans-serif; box-shadow: 0 0 15px rgba(0,0,0,0.2);">
+<?php if(!empty($error)): ?>
+
+<!-- ERROR DISPLAY -->
+<div style="max-width:600px;margin:40px auto;padding:20px;background:#f8d7da;color:#721c24;border-radius:10px;text-align:center;">
+    <strong>Error:</strong> <?php echo htmlspecialchars($error); ?>
+    <br><br>
+    <a href="index.php" style="color:#007bff;">← Back to Dashboard</a>
+</div>
+
+<?php else: ?>
+
+<!-- RECEIPT -->
+<div class="receipt-container" style="max-width: 700px; margin: 40px auto; padding: 30px; border: 2px solid #000; border-radius: 10px; background: #fff; font-family: Arial, sans-serif; box-shadow: 0 0 15px rgba(0,0,0,0.2);">
+    
     <div style="text-align: center; margin-bottom: 30px;">
         <h1 style="margin:0; color:#28a745;">✅ Withdrawal Receipt</h1>
         <p style="color:#555; font-size:18px;">Your withdrawal has been submitted successfully!</p>
@@ -64,7 +80,7 @@ $email = $user['email'] ?? 'N/A';
                 <td><?php echo htmlspecialchars($withdrawal['method']); ?></td>
             </tr>
             <tr>
-                <td style="font-weight:bold;">Amount Deducted</td>
+                <td style="font-weight:bold;">Amount Deducted (USD)</td>
                 <td><strong><?php echo number_format($withdrawal['amount'], 2); ?> USD</strong></td>
             </tr>
             <tr>
@@ -73,7 +89,12 @@ $email = $user['email'] ?? 'N/A';
             </tr>
             <tr>
                 <td style="font-weight:bold;">Payout Amount</td>
-                <td><strong><?php echo number_format($withdrawal['received'], 2); ?> <?php echo htmlspecialchars($withdrawal['currency'] ?? 'USD'); ?></strong></td>
+                <td>
+                    <strong>
+                        <?php echo number_format($withdrawal['received'], 2); ?> 
+                        <?php echo htmlspecialchars($withdrawal['currency'] ?? 'USD'); ?>
+                    </strong>
+                </td>
             </tr>
             <tr>
                 <td style="font-weight:bold;">Status</td>
@@ -88,7 +109,7 @@ $email = $user['email'] ?? 'N/A';
         </table>
     </div>
 
-    <!-- Extra details -->
+    <!-- EXTRA DETAILS -->
     <?php if(!empty($withdrawal['address'])): ?>
     <p><strong>Withdrawal Address:</strong> <?php echo htmlspecialchars($withdrawal['address']); ?></p>
     <?php endif; ?>
@@ -110,7 +131,9 @@ $email = $user['email'] ?? 'N/A';
                 style="background:#28a745; color:white; border:none; padding:12px 30px; font-size:16px; border-radius:5px; cursor:pointer;">
             🖨️ Print Receipt
         </button>
+
         &nbsp;&nbsp;
+
         <a href="index.php" 
            style="background:#007bff; color:white; padding:12px 30px; text-decoration:none; border-radius:5px; display:inline-block;">
             Back to Dashboard
@@ -122,6 +145,8 @@ $email = $user['email'] ?? 'N/A';
         This is an official receipt. Keep it for your records.
     </p>
 </div>
+
+<?php endif; ?>
 
 <style>
 @media print {
