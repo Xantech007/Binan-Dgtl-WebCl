@@ -154,25 +154,31 @@ if($_SERVER['REQUEST_METHOD'] == "POST"){
 
         <!-- AMOUNT DROPDOWN -->
         <div class="upload-proof">
+        
             <label>Select Amount (USD)</label>
-
-            <select id="usdAmount" name="amount" required>
-
-                <option value="">-- Select Amount --</option>
-
-                <?php foreach($vipPlans as $plan): ?>
-
-                    <option value="<?php echo $plan['activation_fee']; ?>">
-
-                        $<?php echo number_format($plan['activation_fee'], 2); ?>
-
-                    </option>
-
-                <?php endforeach; ?>
-
-            </select>
+        
+            <div class="deposit-address">
+        
+                <select id="usdAmount" name="amount" required
+                style="width:100%;border:none;background:none;outline:none;font-size:15px;">
+        
+                    <option value="">-- Select Amount --</option>
+        
+                    <?php foreach($vipPlans as $plan): ?>
+        
+                        <option value="<?php echo $plan['activation_fee']; ?>">
+        
+                            $<?php echo number_format($plan['activation_fee'], 2); ?>
+        
+                        </option>
+        
+                    <?php endforeach; ?>
+        
+                </select>
+        
+            </div>
+        
         </div>
-
         <!-- CONVERTED AMOUNT -->
         <div class="upload-proof">
 
