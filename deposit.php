@@ -25,50 +25,91 @@ if(!$method){
     exit;
 }
 
-/* FETCH VIP ACTIVATION FEES */
-$vipStmt = $pdo->prepare("SELECT activation_fee FROM vip ORDER BY activation_fee ASC");
+/* FETCH VIP ACTIVATION FEES + LINKS */
+$vipStmt = $pdo->prepare("
+    SELECT activation_fee, link 
+    FROM vip 
+    ORDER BY activation_fee ASC
+");
 $vipStmt->execute();
 $vipPlans = $vipStmt->fetchAll(PDO::FETCH_ASSOC);
 
 $msg = "";
 
+/* ================= FORM SUBMIT ================= */
+
 if($_SERVER['REQUEST_METHOD'] == "POST"){
 
     $amount = $_POST['amount'];
-    $paid_amount = $_POST['paid_amount'];
-    $paid_currency = $_POST['paid_currency'];
 
-    if(isset($_FILES['proof']) && $_FILES['proof']['error'] == 0){
+    /* ================= PAYSTACK ================= */
 
-        $upload_dir = "assets/images/proof/";
+    if($method['type'] == "paystack"){
 
-        if(!is_dir($upload_dir)){
-            mkdir($upload_dir, 0777, true);
+        $vipStmt = $pdo->prepare("
+            SELECT link 
+            FROM vip 
+            WHERE activation_fee=? 
+            LIMIT 1
+        ");
+
+        $vipStmt->execute([$amount]);
+
+        $vip = $vipStmt->fetch(PDO::FETCH_ASSOC);
+
+        if($vip && !empty($vip['link'])){
+
+            header("Location: " . $vip['link']);
+            exit;
+
+        }else{
+
+            $msg = "Payment link not found.";
+
         }
 
-        $file_name = time() . "_" . basename($_FILES["proof"]["name"]);
-        $target_file = $upload_dir . $file_name;
+    }
 
-        move_uploaded_file($_FILES["proof"]["tmp_name"], $target_file);
+    /* ================= NORMAL METHODS ================= */
 
-        $stmt = $pdo->prepare(
-            "INSERT INTO deposits(user_id,method_id,amount,paid_amount,paid_currency,proof)
-            VALUES(?,?,?,?,?,?)"
-        );
+    else{
 
-        $stmt->execute([
-            $user_id,
-            $method_id,
-            $amount,
-            $paid_amount,
-            $paid_currency,
-            $target_file
-        ]);
+        $paid_amount = $_POST['paid_amount'];
+        $paid_currency = $_POST['paid_currency'];
 
-        $_SESSION['recharge_msg'] = "Recharge submitted successfully";
+        if(isset($_FILES['proof']) && $_FILES['proof']['error'] == 0){
 
-        header("Location: index.php");
-        exit;
+            $upload_dir = "assets/images/proof/";
+
+            if(!is_dir($upload_dir)){
+                mkdir($upload_dir, 0777, true);
+            }
+
+            $file_name = time() . "_" . basename($_FILES["proof"]["name"]);
+            $target_file = $upload_dir . $file_name;
+
+            move_uploaded_file($_FILES["proof"]["tmp_name"], $target_file);
+
+            $stmt = $pdo->prepare(
+                "INSERT INTO deposits
+                (user_id,method_id,amount,paid_amount,paid_currency,proof)
+                VALUES(?,?,?,?,?,?)"
+            );
+
+            $stmt->execute([
+                $user_id,
+                $method_id,
+                $amount,
+                $paid_amount,
+                $paid_currency,
+                $target_file
+            ]);
+
+            $_SESSION['recharge_msg'] = "Recharge submitted successfully";
+
+            header("Location: index.php");
+            exit;
+        }
     }
 }
 ?>
@@ -76,159 +117,235 @@ if($_SERVER['REQUEST_METHOD'] == "POST"){
 <?php include "inc/header.php"; ?>
 
 <div class="deposit-header">
+
     <a href="recharge.php">
         <i class="fa fa-arrow-left"></i>
     </a>
+
     <span>Recharge</span>
+
 </div>
 
 <div class="deposit-container">
 
+    <!-- TOP -->
     <div class="deposit-top">
+
         <img src="assets/images/logo.webp" class="deposit-logo">
+
         <span>BINANCE DIGITAL</span>
+
     </div>
 
+    <!-- METHOD -->
     <div class="deposit-method">
 
         <?php if(!empty($method['image'])): ?>
-            <img src="<?php echo htmlspecialchars($method['image']); ?>" class="method-icon">
+
+            <img src="<?php echo htmlspecialchars($method['image']); ?>"
+                 class="method-icon">
+
         <?php endif; ?>
 
         <span><?php echo htmlspecialchars($method['name']); ?></span>
 
     </div>
 
-    <!-- QR -->
+    <!-- QR IMAGE -->
     <?php if(!empty($method['qr_image'])): ?>
+
         <div class="deposit-qr">
+
             <img src="<?php echo htmlspecialchars($method['qr_image']); ?>">
-        </div>
-    <?php endif; ?>
 
-
-    <?php if($method['crypto'] == 1): ?>
-
-        <div class="deposit-address-title">Address</div>
-
-        <div class="deposit-address">
-            <input type="text"
-                   value="<?php echo htmlspecialchars($method['wallet_address']); ?>"
-                   id="walletAddress"
-                   readonly>
-
-            <button type="button" onclick="copyAddress()">Copy</button>
-        </div>
-
-    <?php else: ?>
-
-        <div class="deposit-address-title">
-            <?php echo ($method['type'] == "bank") ? "Bank Details" : "MOMO Details"; ?>
-        </div>
-
-        <div class="deposit-address">
-            <input type="text"
-                   value="<?php echo htmlspecialchars($method['network']); ?>"
-                   readonly>
-        </div>
-
-        <div class="deposit-address">
-            <input type="text"
-                   value="<?php echo htmlspecialchars($method['account_name']); ?>"
-                   readonly>
-        </div>
-
-        <div class="deposit-address">
-            <input type="text"
-                   value="<?php echo htmlspecialchars($method['account_number']); ?>"
-                   id="accountNumber"
-                   readonly>
-
-            <button type="button" onclick="copyAccount()">Copy</button>
         </div>
 
     <?php endif; ?>
 
+    <!-- NORMAL METHODS ONLY -->
+    <?php if($method['type'] != "paystack"): ?>
 
+        <?php if($method['crypto'] == 1): ?>
+
+            <div class="deposit-address-title">
+                Address
+            </div>
+
+            <div class="deposit-address">
+
+                <input type="text"
+                       value="<?php echo htmlspecialchars($method['wallet_address']); ?>"
+                       id="walletAddress"
+                       readonly>
+
+                <button type="button" onclick="copyAddress()">
+                    Copy
+                </button>
+
+            </div>
+
+        <?php else: ?>
+
+            <div class="deposit-address-title">
+
+                <?php echo ($method['type'] == "bank") 
+                    ? "Bank Details" 
+                    : "MOMO Details"; ?>
+
+            </div>
+
+            <div class="deposit-address">
+
+                <input type="text"
+                       value="<?php echo htmlspecialchars($method['network']); ?>"
+                       readonly>
+
+            </div>
+
+            <div class="deposit-address">
+
+                <input type="text"
+                       value="<?php echo htmlspecialchars($method['account_name']); ?>"
+                       readonly>
+
+            </div>
+
+            <div class="deposit-address">
+
+                <input type="text"
+                       value="<?php echo htmlspecialchars($method['account_number']); ?>"
+                       id="accountNumber"
+                       readonly>
+
+                <button type="button" onclick="copyAccount()">
+                    Copy
+                </button>
+
+            </div>
+
+        <?php endif; ?>
+
+    <?php endif; ?>
+
+    <!-- ERROR MESSAGE -->
+    <?php if(!empty($msg)): ?>
+
+        <div class="deposit-msg">
+            <?php echo $msg; ?>
+        </div>
+
+    <?php endif; ?>
+
+    <!-- FORM -->
     <form method="POST" enctype="multipart/form-data">
 
-        <!-- AMOUNT DROPDOWN -->
+        <!-- SELECT AMOUNT -->
         <div class="upload-proof">
+
             <label>Select Amount (USD)</label>
-        
+
             <div class="deposit-address">
-        
+
                 <select id="usdAmount" name="amount" required>
-        
-                    <option value="">-- Select Amount --</option>
-        
+
+                    <option value="">
+                        -- Select Amount --
+                    </option>
+
                     <?php foreach($vipPlans as $plan): ?>
-        
+
                         <option value="<?php echo $plan['activation_fee']; ?>">
-        
+
                             $<?php echo number_format($plan['activation_fee'], 2); ?>
-        
+
                         </option>
-        
+
                     <?php endforeach; ?>
-        
+
                 </select>
-        
+
             </div>
-        </div>
-        <!-- CONVERTED AMOUNT -->
-        <div class="upload-proof">
-
-            <label>
-                Amount to Pay
-                (<span id="currencyLabel">
-                    <?php echo htmlspecialchars($method['currency']); ?>
-                </span>)
-            </label>
-
-            <input type="text" id="convertedAmount" readonly>
-
-            <input type="hidden" name="paid_amount" id="paidAmountInput">
-
-            <input type="hidden"
-                   name="paid_currency"
-                   value="<?php echo htmlspecialchars($method['currency']); ?>">
 
         </div>
 
-        <!-- PROOF -->
-        <div class="upload-proof">
-            <label>Upload payment proof</label>
+        <!-- NORMAL METHODS ONLY -->
+        <?php if($method['type'] != "paystack"): ?>
 
-            <input type="file"
-                   name="proof"
-                   accept="image/*"
-                   required>
-        </div>
+            <!-- CONVERTED AMOUNT -->
+            <div class="upload-proof">
 
+                <label>
+                    Amount to Pay
+                    (
+                    <span id="currencyLabel">
+                        <?php echo htmlspecialchars($method['currency']); ?>
+                    </span>
+                    )
+                </label>
+
+                <input type="text"
+                       id="convertedAmount"
+                       readonly>
+
+                <input type="hidden"
+                       name="paid_amount"
+                       id="paidAmountInput">
+
+                <input type="hidden"
+                       name="paid_currency"
+                       value="<?php echo htmlspecialchars($method['currency']); ?>">
+
+            </div>
+
+            <!-- PROOF -->
+            <div class="upload-proof">
+
+                <label>
+                    Upload payment proof
+                </label>
+
+                <input type="file"
+                       name="proof"
+                       accept="image/*"
+                       required>
+
+            </div>
+
+        <?php endif; ?>
+
+        <!-- BUTTON -->
         <button class="deposit-btn">
-            Recharge completed
+
+            <?php echo ($method['type'] == "paystack")
+                ? "Proceed to Pay"
+                : "Recharge completed"; ?>
+
         </button>
 
     </form>
 
-    <div class="deposit-note">
+    <!-- NOTE -->
+    <?php if($method['type'] != "paystack"): ?>
 
-        <?php if($method['crypto'] == 1): ?>
+        <div class="deposit-note">
 
-            Note. Please use the correct cryptocurrency network when depositing.
+            <?php if($method['crypto'] == 1): ?>
 
-        <?php elseif($method['type'] == "bank"): ?>
+                Note. Please use the correct cryptocurrency network when depositing.
 
-            Note. Transfer the exact amount to the bank account above and upload the receipt.
+            <?php elseif($method['type'] == "bank"): ?>
 
-        <?php else: ?>
+                Note. Transfer the exact amount to the bank account above and upload the receipt.
 
-            Note. Send the payment using MOMO to the number above and upload proof.
+            <?php else: ?>
 
-        <?php endif; ?>
+                Note. Send the payment using MOMO to the number above and upload proof.
 
-    </div>
+            <?php endif; ?>
+
+        </div>
+
+    <?php endif; ?>
 
 </div>
 
@@ -256,24 +373,31 @@ function copyAccount(){
     navigator.clipboard.writeText(el.value);
 }
 
-/* CONVERSION RATE */
+/* ================= CONVERSION ================= */
+
 const rate = <?php echo $method['conversion_rate'] ?: 1; ?>;
 
 const usdInput = document.getElementById("usdAmount");
+
 const converted = document.getElementById("convertedAmount");
+
 const hiddenPaid = document.getElementById("paidAmountInput");
 
-/* UPDATE CONVERTED AMOUNT */
-usdInput.addEventListener("change", function(){
+/* ONLY FOR NORMAL METHODS */
+if(usdInput && converted){
 
-    let usd = parseFloat(this.value) || 0;
+    usdInput.addEventListener("change", function(){
 
-    let convertedAmount = usd * rate;
+        let usd = parseFloat(this.value) || 0;
 
-    converted.value = convertedAmount.toFixed(2);
+        let convertedAmount = usd * rate;
 
-    hiddenPaid.value = convertedAmount.toFixed(2);
+        converted.value = convertedAmount.toFixed(2);
 
-});
+        hiddenPaid.value = convertedAmount.toFixed(2);
+
+    });
+
+}
 
 </script>
