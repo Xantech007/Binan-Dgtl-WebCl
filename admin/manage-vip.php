@@ -1,26 +1,25 @@
 <?php
 // admin/manage-vip.php
 require_once __DIR__ . '/inc/header.php';
-
 $message = '';
-$error   = '';
+$error = '';
 
 // --------------------------------------------------
 // HANDLE FORM SUBMISSIONS
 // --------------------------------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
-
     try {
         if ($action === 'add' || $action === 'edit') {
-            $name             = trim($_POST['name'] ?? '');
-            $daily_tasks      = (int)($_POST['daily_tasks'] ?? 0);
-            $simple_interest  = (float)($_POST['simple_interest'] ?? 0);
-            $daily_profit     = (float)($_POST['daily_profit'] ?? 0);
-            $total_profit     = (float)($_POST['total_profit'] ?? 0);
-            $activation_fee   = (float)($_POST['activation_fee'] ?? 0);
-            $duration_days    = (int)($_POST['duration_days'] ?? 30);
-            $status           = (int)($_POST['status'] ?? 1);
+            $name = trim($_POST['name'] ?? '');
+            $link = trim($_POST['link'] ?? '');
+            $daily_tasks = (int)($_POST['daily_tasks'] ?? 0);
+            $simple_interest = (float)($_POST['simple_interest'] ?? 0);
+            $daily_profit = (float)($_POST['daily_profit'] ?? 0);
+            $total_profit = (float)($_POST['total_profit'] ?? 0);
+            $activation_fee = (float)($_POST['activation_fee'] ?? 0);
+            $duration_days = (int)($_POST['duration_days'] ?? 30);
+            $status = (int)($_POST['status'] ?? 1);
 
             if (empty($name)) {
                 throw new Exception("Plan name is required.");
@@ -29,12 +28,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($action === 'add') {
                 $stmt = $pdo->prepare("
                     INSERT INTO vip 
-                    (name, daily_tasks, simple_interest, daily_profit, total_profit, 
+                    (name, link, daily_tasks, simple_interest, daily_profit, total_profit,
                      activation_fee, status, duration_days)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ");
                 $stmt->execute([
-                    $name, $daily_tasks, $simple_interest, $daily_profit,
+                    $name, $link, $daily_tasks, $simple_interest, $daily_profit,
                     $total_profit, $activation_fee, $status, $duration_days
                 ]);
                 $message = "New VIP plan added successfully.";
@@ -45,20 +44,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $stmt = $pdo->prepare("
                     UPDATE vip SET
-                        name             = ?,
-                        daily_tasks      = ?,
-                        simple_interest  = ?,
-                        daily_profit     = ?,
-                        total_profit     = ?,
-                        activation_fee   = ?,
-                        status           = ?,
-                        duration_days    = ?
+                        name = ?,
+                        link = ?,
+                        daily_tasks = ?,
+                        simple_interest = ?,
+                        daily_profit = ?,
+                        total_profit = ?,
+                        activation_fee = ?,
+                        status = ?,
+                        duration_days = ?
                     WHERE id = ?
                 ");
                 $stmt->execute([
-                    $name, $daily_tasks, $simple_interest, $daily_profit,
-                    $total_profit, $activation_fee, $status, $duration_days,
-                    $id
+                    $name, $link, $daily_tasks, $simple_interest, $daily_profit,
+                    $total_profit, $activation_fee, $status, $duration_days, $id
                 ]);
                 $message = "VIP plan updated successfully.";
             }
@@ -67,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = (int)($_POST['id'] ?? 0);
             if ($id <= 0) throw new Exception("Invalid plan ID.");
 
-            // Optional: check if any user is using this plan
+            // Check if any user is using this plan
             $stmt = $pdo->prepare("SELECT COUNT(*) FROM user_vip WHERE vip_id = ?");
             $stmt->execute([$id]);
             if ($stmt->fetchColumn() > 0) {
@@ -102,27 +101,33 @@ try {
   <h1 style="text-align:center; margin: 2.5rem 0 2rem;">Manage VIP Plans</h1>
 
   <?php if ($message): ?>
-    <div style="background:#238636; color:white; padding:1.2rem; border-radius:8px; margin-bottom:2rem; text-align:center; max-width:900px; margin-left:auto; margin-right:auto;">
+    <div style="background:#238636; color:white; padding:1.2rem; border-radius:8px; margin-bottom:2rem; text-align:center; max-width:1200px; margin-left:auto; margin-right:auto;">
       <?= htmlspecialchars($message) ?>
     </div>
   <?php endif; ?>
 
   <?php if ($error): ?>
-    <div style="background:#f85149; color:white; padding:1.2rem; border-radius:8px; margin-bottom:2rem; text-align:center; max-width:900px; margin-left:auto; margin-right:auto;">
+    <div style="background:#f85149; color:white; padding:1.2rem; border-radius:8px; margin-bottom:2rem; text-align:center; max-width:1200px; margin-left:auto; margin-right:auto;">
       <?= htmlspecialchars($error) ?>
     </div>
   <?php endif; ?>
 
   <!-- ADD NEW PLAN FORM -->
-  <div style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:2rem; margin-bottom:3rem; max-width:900px; margin-left:auto; margin-right:auto;">
+  <div style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:2rem; margin-bottom:3rem; max-width:1100px; margin-left:auto; margin-right:auto;">
     <h2 style="margin-bottom:1.5rem; text-align:center;">Add New VIP Plan</h2>
-    
+   
     <form method="POST">
       <input type="hidden" name="action" value="add">
 
       <div style="margin-bottom:1.4rem;">
         <label style="display:block; margin-bottom:0.5rem;">Plan Name *</label>
         <input type="text" name="name" required style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
+      </div>
+
+      <div style="margin-bottom:1.4rem;">
+        <label style="display:block; margin-bottom:0.5rem;">Link (URL)</label>
+        <input type="url" name="link" placeholder="https://example.com/vip-plan" 
+               style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
       </div>
 
       <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1.4rem; margin-bottom:1.4rem;">
@@ -176,17 +181,12 @@ try {
     <p style="text-align:center; color:var(--text-muted);">No VIP plans found.</p>
   <?php else: ?>
   <div style="overflow-x:auto;">
-    <table style="
-      width:100%; 
-      max-width:1200px; 
-      margin:0 auto 3rem; 
-      border-collapse:separate; 
-      border-spacing:0 10px;
-    ">
+    <table style="width:100%; max-width:1300px; margin:0 auto 3rem; border-collapse:separate; border-spacing:0 10px;">
       <thead>
         <tr style="background:#1f2937;">
           <th style="padding:1rem; border-top-left-radius:8px;">ID</th>
           <th style="padding:1rem;">Name</th>
+          <th style="padding:1rem;">Link</th>
           <th style="padding:1rem;">Fee</th>
           <th style="padding:1rem;">Duration</th>
           <th style="padding:1rem;">Daily Tasks</th>
@@ -201,6 +201,15 @@ try {
         <tr style="background:var(--card);">
           <td style="padding:1.1rem; text-align:center;"><?= $plan['id'] ?></td>
           <td style="padding:1.1rem;"><?= htmlspecialchars($plan['name']) ?></td>
+          <td style="padding:1.1rem;">
+            <?php if (!empty($plan['link'])): ?>
+              <a href="<?= htmlspecialchars($plan['link']) ?>" target="_blank" style="color:#58a6ff; text-decoration:underline;">
+                🔗 View Link
+              </a>
+            <?php else: ?>
+              <span style="color:var(--text-muted); font-style:italic;">—</span>
+            <?php endif; ?>
+          </td>
           <td style="padding:1.1rem; text-align:right;">$<?= number_format($plan['activation_fee'], 2) ?></td>
           <td style="padding:1.1rem; text-align:center;"><?= $plan['duration_days'] ?> days</td>
           <td style="padding:1.1rem; text-align:center;"><?= $plan['daily_tasks'] ?></td>
@@ -216,9 +225,8 @@ try {
                     onclick="openEditModal(<?= htmlspecialchars(json_encode($plan)) ?>)">
               <i class="fas fa-edit"></i> Edit
             </button>
-
             <form method="POST" style="display:inline;" 
-                  onsubmit="return confirm('Delete VIP plan «<?= htmlspecialchars(addslashes($plan['name'])) ?>»? This action cannot be undone.');">
+                  onsubmit="return confirm('Delete VIP plan «<?= htmlspecialchars(addslashes($plan['name'])) ?>»?');">
               <input type="hidden" name="action" value="delete">
               <input type="hidden" name="id" value="<?= $plan['id'] ?>">
               <button type="submit" class="btn red" style="padding:0.5rem 1rem; font-size:0.9rem;">
@@ -235,12 +243,11 @@ try {
 
   <!-- EDIT MODAL -->
   <div id="editModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); align-items:center; justify-content:center; z-index:1000;">
-    <div style="background:var(--card); border:1px solid var(--border); border-radius:12px; width:90%; max-width:900px; max-height:90vh; overflow-y:auto; padding:2rem; position:relative;">
-      <button onclick="document.getElementById('editModal').style.display='none'" 
+    <div style="background:var(--card); border:1px solid var(--border); border-radius:12px; width:90%; max-width:1100px; max-height:90vh; overflow-y:auto; padding:2rem; position:relative;">
+      <button onclick="document.getElementById('editModal').style.display='none'"
               style="position:absolute; top:1rem; right:1.5rem; background:none; border:none; color:var(--text-muted); font-size:2rem; cursor:pointer;">
         ×
       </button>
-
       <h2 style="margin-bottom:1.8rem; text-align:center;">Edit VIP Plan</h2>
 
       <form method="POST">
@@ -250,6 +257,12 @@ try {
         <div style="margin-bottom:1.4rem;">
           <label style="display:block; margin-bottom:0.5rem;">Plan Name *</label>
           <input type="text" name="name" id="edit_name" required style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
+        </div>
+
+        <div style="margin-bottom:1.4rem;">
+          <label style="display:block; margin-bottom:0.5rem;">Link (URL)</label>
+          <input type="url" name="link" id="edit_link" placeholder="https://example.com/vip-plan"
+                 style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
         </div>
 
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:1.4rem; margin-bottom:1.4rem;">
@@ -296,20 +309,20 @@ try {
       </form>
     </div>
   </div>
-
 </main>
 
 <script>
 function openEditModal(plan) {
-  document.getElementById('edit_id').value              = plan.id;
-  document.getElementById('edit_name').value            = plan.name;
-  document.getElementById('edit_daily_tasks').value     = plan.daily_tasks;
+  document.getElementById('edit_id').value = plan.id;
+  document.getElementById('edit_name').value = plan.name;
+  document.getElementById('edit_link').value = plan.link || '';
+  document.getElementById('edit_daily_tasks').value = plan.daily_tasks;
   document.getElementById('edit_simple_interest').value = plan.simple_interest;
-  document.getElementById('edit_daily_profit').value    = plan.daily_profit;
-  document.getElementById('edit_total_profit').value    = plan.total_profit;
-  document.getElementById('edit_activation_fee').value  = plan.activation_fee;
-  document.getElementById('edit_duration_days').value   = plan.duration_days;
-  document.getElementById('edit_status').value          = plan.status;
+  document.getElementById('edit_daily_profit').value = plan.daily_profit;
+  document.getElementById('edit_total_profit').value = plan.total_profit;
+  document.getElementById('edit_activation_fee').value = plan.activation_fee;
+  document.getElementById('edit_duration_days').value = plan.duration_days;
+  document.getElementById('edit_status').value = plan.status;
 
   document.getElementById('editModal').style.display = 'flex';
 }
