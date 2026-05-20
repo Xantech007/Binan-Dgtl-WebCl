@@ -154,13 +154,11 @@ if($_SERVER['REQUEST_METHOD'] == "POST"){
 
         <!-- AMOUNT DROPDOWN -->
         <div class="upload-proof">
-        
             <label>Select Amount (USD)</label>
         
             <div class="deposit-address">
         
-                <select id="usdAmount" name="amount" required
-                style="width:100%;border:none;background:none;outline:none;font-size:15px;">
+                <select id="usdAmount" name="amount" required>
         
                     <option value="">-- Select Amount --</option>
         
@@ -177,7 +175,6 @@ if($_SERVER['REQUEST_METHOD'] == "POST"){
                 </select>
         
             </div>
-        
         </div>
         <!-- CONVERTED AMOUNT -->
         <div class="upload-proof">
