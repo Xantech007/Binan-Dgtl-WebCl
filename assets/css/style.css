@@ -862,6 +862,21 @@ transform:translateX(-50%) translateY(0);
 }
 
 
+.deposit-address select{
+flex:1;
+border:none;
+background:#222;
+color:#fff;
+padding:12px;
+font-size:13px;
+outline:none;
+appearance:none;
+-webkit-appearance:none;
+-moz-appearance:none;
+cursor:pointer;
+}
+
+
 /* ================= WITHDRAW ================= */
 
 .withdraw-header{
