@@ -125,8 +125,8 @@ try {
       </div>
 
       <div style="margin-bottom:1.4rem;">
-        <label style="display:block; margin-bottom:0.5rem;">Link (URL)</label>
-        <input type="url" name="link" placeholder="https://example.com/vip-plan" 
+        <label style="display:block; margin-bottom:0.5rem;">Paystack Link (URL)</label>
+        <input type="url" name="link" placeholder="https://paystack.com/link" 
                style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
       </div>
 
@@ -260,8 +260,8 @@ try {
         </div>
 
         <div style="margin-bottom:1.4rem;">
-          <label style="display:block; margin-bottom:0.5rem;">Link (URL)</label>
-          <input type="url" name="link" id="edit_link" placeholder="https://example.com/vip-plan"
+          <label style="display:block; margin-bottom:0.5rem;">Paystack Link (URL)</label>
+          <input type="url" name="link" id="edit_link" placeholder="https://paystack.com/link"
                  style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
         </div>
 
