@@ -3,189 +3,229 @@ session_start();
 require_once "config/database.php";
 
 if(!isset($_SESSION['user_id'])){
-header("Location: login.php");
-exit;
+    header("Location: login.php");
+    exit;
 }
 
-$user_id=$_SESSION['user_id'];
+$user_id = $_SESSION['user_id'];
 
 if(!isset($_GET['id'])){
-echo "Invalid payment method";
-exit;
+    echo "Invalid payment method";
+    exit;
 }
 
-$method_id=intval($_GET['id']);
+$method_id = intval($_GET['id']);
 
-$stmt=$pdo->prepare("SELECT * FROM payment_methods WHERE id=?");
+$stmt = $pdo->prepare("SELECT * FROM payment_methods WHERE id=?");
 $stmt->execute([$method_id]);
-$method=$stmt->fetch(PDO::FETCH_ASSOC);
+$method = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if(!$method){
-echo "Payment method not found";
-exit;
+    echo "Payment method not found";
+    exit;
 }
 
-$msg="";
+/* FETCH VIP ACTIVATION FEES */
+$vipStmt = $pdo->prepare("SELECT activation_fee FROM vip ORDER BY activation_fee ASC");
+$vipStmt->execute();
+$vipPlans = $vipStmt->fetchAll(PDO::FETCH_ASSOC);
 
-if($_SERVER['REQUEST_METHOD']=="POST"){
+$msg = "";
 
-$amount=$_POST['amount'];
-$paid_amount=$_POST['paid_amount'];
-$paid_currency=$_POST['paid_currency'];
+if($_SERVER['REQUEST_METHOD'] == "POST"){
 
-if(isset($_FILES['proof']) && $_FILES['proof']['error']==0){
+    $amount = $_POST['amount'];
+    $paid_amount = $_POST['paid_amount'];
+    $paid_currency = $_POST['paid_currency'];
 
-$upload_dir="assets/images/proof/";
+    if(isset($_FILES['proof']) && $_FILES['proof']['error'] == 0){
 
-if(!is_dir($upload_dir)){
-mkdir($upload_dir,0777,true);
-}
+        $upload_dir = "assets/images/proof/";
 
-$file_name=time()."_".basename($_FILES["proof"]["name"]);
-$target_file=$upload_dir.$file_name;
+        if(!is_dir($upload_dir)){
+            mkdir($upload_dir, 0777, true);
+        }
 
-move_uploaded_file($_FILES["proof"]["tmp_name"],$target_file);
+        $file_name = time() . "_" . basename($_FILES["proof"]["name"]);
+        $target_file = $upload_dir . $file_name;
 
-$stmt=$pdo->prepare(
-"INSERT INTO deposits(user_id,method_id,amount,paid_amount,paid_currency,proof)
-VALUES(?,?,?,?,?,?)"
-);
+        move_uploaded_file($_FILES["proof"]["tmp_name"], $target_file);
 
-$stmt->execute([
-$user_id,
-$method_id,
-$amount,
-$paid_amount,
-$paid_currency,
-$target_file
-]);
+        $stmt = $pdo->prepare(
+            "INSERT INTO deposits(user_id,method_id,amount,paid_amount,paid_currency,proof)
+            VALUES(?,?,?,?,?,?)"
+        );
 
-$_SESSION['recharge_msg']="Recharge submitted successfully";
-header("Location: index.php");
-exit;
+        $stmt->execute([
+            $user_id,
+            $method_id,
+            $amount,
+            $paid_amount,
+            $paid_currency,
+            $target_file
+        ]);
 
-}
+        $_SESSION['recharge_msg'] = "Recharge submitted successfully";
 
+        header("Location: index.php");
+        exit;
+    }
 }
 ?>
 
 <?php include "inc/header.php"; ?>
 
 <div class="deposit-header">
-<a href="recharge.php">
-<i class="fa fa-arrow-left"></i>
-</a>
-<span>Recharge</span>
+    <a href="recharge.php">
+        <i class="fa fa-arrow-left"></i>
+    </a>
+    <span>Recharge</span>
 </div>
 
 <div class="deposit-container">
 
-<div class="deposit-top">
-<img src="assets/images/logo.webp" class="deposit-logo">
-<span>BINANCE DIGITAL</span>
-</div>
+    <div class="deposit-top">
+        <img src="assets/images/logo.webp" class="deposit-logo">
+        <span>BINANCE DIGITAL</span>
+    </div>
 
-<div class="deposit-method">
+    <div class="deposit-method">
 
-<?php if(!empty($method['image'])): ?>
-<img src="<?php echo htmlspecialchars($method['image']); ?>" class="method-icon">
-<?php endif; ?>
+        <?php if(!empty($method['image'])): ?>
+            <img src="<?php echo htmlspecialchars($method['image']); ?>" class="method-icon">
+        <?php endif; ?>
 
-<span><?php echo htmlspecialchars($method['name']); ?></span>
+        <span><?php echo htmlspecialchars($method['name']); ?></span>
 
-</div>
+    </div>
 
-<!-- QR -->
-<?php if(!empty($method['qr_image'])): ?>
-<div class="deposit-qr">
-<img src="<?php echo htmlspecialchars($method['qr_image']); ?>">
-</div>
-<?php endif; ?>
-
-
-<?php if($method['crypto']==1): ?>
-
-<div class="deposit-address-title">Address</div>
-
-<div class="deposit-address">
-<input type="text"
-value="<?php echo htmlspecialchars($method['wallet_address']); ?>"
-id="walletAddress"
-readonly>
-
-<button type="button" onclick="copyAddress()">Copy</button>
-</div>
-
-<?php else: ?>
-
-<div class="deposit-address-title">
-<?php echo ($method['type']=="bank") ? "Bank Details" : "MOMO Details"; ?>
-</div>
-
-<div class="deposit-address">
-<input type="text"
-value="<?php echo htmlspecialchars($method['network']); ?>"
-readonly>
-</div>
-
-<div class="deposit-address">
-<input type="text"
-value="<?php echo htmlspecialchars($method['account_name']); ?>"
-readonly>
-</div>
-
-<div class="deposit-address">
-<input type="text"
-value="<?php echo htmlspecialchars($method['account_number']); ?>"
-id="accountNumber"
-readonly>
-
-<button type="button" onclick="copyAccount()">Copy</button>
-</div>
-
-<?php endif; ?>
+    <!-- QR -->
+    <?php if(!empty($method['qr_image'])): ?>
+        <div class="deposit-qr">
+            <img src="<?php echo htmlspecialchars($method['qr_image']); ?>">
+        </div>
+    <?php endif; ?>
 
 
-<form method="POST" enctype="multipart/form-data">
+    <?php if($method['crypto'] == 1): ?>
 
-<div class="upload-proof">
-<label>Enter Amount (USD)</label>
-<input type="number" id="usdAmount" name="amount" step="0.01" required>
-</div>
+        <div class="deposit-address-title">Address</div>
 
-<div class="upload-proof">
+        <div class="deposit-address">
+            <input type="text"
+                   value="<?php echo htmlspecialchars($method['wallet_address']); ?>"
+                   id="walletAddress"
+                   readonly>
 
-<label>Amount to Pay (<span id="currencyLabel"><?php echo $method['currency']; ?></span>)</label>
+            <button type="button" onclick="copyAddress()">Copy</button>
+        </div>
 
-<input type="text" id="convertedAmount" readonly>
+    <?php else: ?>
 
-<input type="hidden" name="paid_amount" id="paidAmountInput">
-<input type="hidden" name="paid_currency" value="<?php echo htmlspecialchars($method['currency']); ?>">
+        <div class="deposit-address-title">
+            <?php echo ($method['type'] == "bank") ? "Bank Details" : "MOMO Details"; ?>
+        </div>
 
-</div>
+        <div class="deposit-address">
+            <input type="text"
+                   value="<?php echo htmlspecialchars($method['network']); ?>"
+                   readonly>
+        </div>
 
-<div class="upload-proof">
-<label>Upload payment proof</label>
-<input type="file" name="proof" accept="image/*" required>
-</div>
+        <div class="deposit-address">
+            <input type="text"
+                   value="<?php echo htmlspecialchars($method['account_name']); ?>"
+                   readonly>
+        </div>
 
-<button class="deposit-btn">
-Recharge completed
-</button>
+        <div class="deposit-address">
+            <input type="text"
+                   value="<?php echo htmlspecialchars($method['account_number']); ?>"
+                   id="accountNumber"
+                   readonly>
 
-</form>
+            <button type="button" onclick="copyAccount()">Copy</button>
+        </div>
 
-<div class="deposit-note">
+    <?php endif; ?>
 
-<?php if($method['crypto']==1): ?>
-Note. Please use the correct cryptocurrency network when depositing.
-<?php elseif($method['type']=="bank"): ?>
-Note. Transfer the exact amount to the bank account above and upload the receipt.
-<?php else: ?>
-Note. Send the payment using MOMO to the number above and upload proof.
-<?php endif; ?>
 
-</div>
+    <form method="POST" enctype="multipart/form-data">
+
+        <!-- AMOUNT DROPDOWN -->
+        <div class="upload-proof">
+            <label>Select Amount (USD)</label>
+
+            <select id="usdAmount" name="amount" required>
+
+                <option value="">-- Select Amount --</option>
+
+                <?php foreach($vipPlans as $plan): ?>
+
+                    <option value="<?php echo $plan['activation_fee']; ?>">
+
+                        $<?php echo number_format($plan['activation_fee'], 2); ?>
+
+                    </option>
+
+                <?php endforeach; ?>
+
+            </select>
+        </div>
+
+        <!-- CONVERTED AMOUNT -->
+        <div class="upload-proof">
+
+            <label>
+                Amount to Pay
+                (<span id="currencyLabel">
+                    <?php echo htmlspecialchars($method['currency']); ?>
+                </span>)
+            </label>
+
+            <input type="text" id="convertedAmount" readonly>
+
+            <input type="hidden" name="paid_amount" id="paidAmountInput">
+
+            <input type="hidden"
+                   name="paid_currency"
+                   value="<?php echo htmlspecialchars($method['currency']); ?>">
+
+        </div>
+
+        <!-- PROOF -->
+        <div class="upload-proof">
+            <label>Upload payment proof</label>
+
+            <input type="file"
+                   name="proof"
+                   accept="image/*"
+                   required>
+        </div>
+
+        <button class="deposit-btn">
+            Recharge completed
+        </button>
+
+    </form>
+
+    <div class="deposit-note">
+
+        <?php if($method['crypto'] == 1): ?>
+
+            Note. Please use the correct cryptocurrency network when depositing.
+
+        <?php elseif($method['type'] == "bank"): ?>
+
+            Note. Transfer the exact amount to the bank account above and upload the receipt.
+
+        <?php else: ?>
+
+            Note. Send the payment using MOMO to the number above and upload proof.
+
+        <?php endif; ?>
+
+    </div>
 
 </div>
 
@@ -193,36 +233,43 @@ Note. Send the payment using MOMO to the number above and upload proof.
 
 <script>
 
-/* COPY ADDRESS (uses browser default toast) */
+/* COPY ADDRESS */
 function copyAddress(){
+
     const el = document.getElementById("walletAddress");
+
     if(!el) return;
 
     navigator.clipboard.writeText(el.value);
 }
 
-/* COPY ACCOUNT (uses browser default toast) */
+/* COPY ACCOUNT */
 function copyAccount(){
+
     const el = document.getElementById("accountNumber");
+
     if(!el) return;
 
     navigator.clipboard.writeText(el.value);
 }
 
-/* CONVERSION */
+/* CONVERSION RATE */
 const rate = <?php echo $method['conversion_rate'] ?: 1; ?>;
 
 const usdInput = document.getElementById("usdAmount");
 const converted = document.getElementById("convertedAmount");
 const hiddenPaid = document.getElementById("paidAmountInput");
 
-usdInput.addEventListener("input", function(){
+/* UPDATE CONVERTED AMOUNT */
+usdInput.addEventListener("change", function(){
 
-let usd = parseFloat(this.value) || 0;
-let convertedAmount = usd * rate;
+    let usd = parseFloat(this.value) || 0;
 
-converted.value = convertedAmount.toFixed(2);
-hiddenPaid.value = convertedAmount.toFixed(2);
+    let convertedAmount = usd * rate;
+
+    converted.value = convertedAmount.toFixed(2);
+
+    hiddenPaid.value = convertedAmount.toFixed(2);
 
 });
 
