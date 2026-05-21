@@ -17,8 +17,13 @@ $user_country = $user['country'] ?? '';
 
 $stmt = $pdo->prepare("
 SELECT * FROM payment_methods 
-WHERE status=1 
-AND (active_country IS NULL OR active_country='' OR active_country=?)
+WHERE status=1
+AND purpose IN('deposit','all')
+AND (
+    active_country IS NULL 
+    OR active_country='' 
+    OR active_country=?
+)
 ORDER BY id ASC
 ");
 
