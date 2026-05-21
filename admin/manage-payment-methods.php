@@ -24,6 +24,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $name = trim($_POST['name'] ?? '');
         $wallet_address = trim($_POST['wallet_address'] ?? '');
         $status = (int)($_POST['status'] ?? 1);
+
+        $purpose = $_POST['purpose'] ?? 'all';
+
+        if(!in_array($purpose, ['deposit','withdraw','all'])){
+            $purpose = 'all';
+        }
+
         $withdrawal_fee = (float)($_POST['withdrawal_fee'] ?? 0);
         $currency = trim($_POST['currency'] ?? 'USD');
         $conversion_rate = (float)($_POST['conversion_rate'] ?? 1);
@@ -51,7 +58,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $account_name = '';
             $account_number = '';
 
-            /* KEEP CONVERSION RATE AVAILABLE */
             if ($conversion_rate <= 0) {
                 $conversion_rate = 1;
             }
@@ -123,6 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $active_country,
             $min_withdraw,
             $status,
+            $purpose,
             $withdrawal_fee
 
         ];
@@ -131,8 +138,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $stmt = $pdo->prepare("
                 INSERT INTO payment_methods
-                (name,wallet_address,qr_image,image,crypto,type,network,account_name,account_number,currency,conversion_rate,active_country,min_withdraw,status,withdrawal_fee)
-                VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                (
+                    name,
+                    wallet_address,
+                    qr_image,
+                    image,
+                    crypto,
+                    type,
+                    network,
+                    account_name,
+                    account_number,
+                    currency,
+                    conversion_rate,
+                    active_country,
+                    min_withdraw,
+                    status,
+                    purpose,
+                    withdrawal_fee
+                )
+                VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
             ");
 
             $stmt->execute($data);
@@ -162,6 +186,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 active_country=?,
                 min_withdraw=?,
                 status=?,
+                purpose=?,
                 withdrawal_fee=?
                 WHERE id=?
             ");
@@ -250,6 +275,15 @@ $methods = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </div>
 
 <div style="margin-bottom:1.4rem;">
+<label>Purpose</label>
+<select name="purpose" style="width:100%;padding:0.8rem;">
+<option value="all">All</option>
+<option value="deposit">Deposit</option>
+<option value="withdraw">Withdraw</option>
+</select>
+</div>
+
+<div style="margin-bottom:1.4rem;">
 <label>Crypto?</label>
 <select name="crypto" id="cryptoSelect" style="width:100%;padding:0.8rem;">
 <option value="1">Yes</option>
@@ -293,8 +327,6 @@ $methods = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </div>
 
 </div>
-
-<!-- CONVERSION RATE NOW AVAILABLE FOR ALL INCLUDING PAYSTACK -->
 
 <div style="margin-bottom:1.4rem;" id="conversionRateSection">
 
@@ -379,7 +411,7 @@ Add Payment Method
 
 <div style="overflow-x:auto;">
 
-<table style="width:100%;max-width:1100px;margin:0 auto;border-collapse:separate;border-spacing:0 10px;">
+<table style="width:100%;max-width:1200px;margin:0 auto;border-collapse:separate;border-spacing:0 10px;">
 
 <thead>
 
@@ -388,6 +420,7 @@ Add Payment Method
 <th>ID</th>
 <th>Name</th>
 <th>Type</th>
+<th>Purpose</th>
 <th>Logo</th>
 <th>QR</th>
 <th>Currency</th>
@@ -415,6 +448,10 @@ Add Payment Method
 
 <td style="padding:1rem;text-align:center">
 <?= htmlspecialchars($m['type']) ?>
+</td>
+
+<td style="padding:1rem;text-align:center">
+<?= ucfirst(htmlspecialchars($m['purpose'])) ?>
 </td>
 
 <td style="padding:1rem;text-align:center">
@@ -504,6 +541,15 @@ Edit
 </div>
 
 <div style="margin-bottom:1.4rem;">
+<label>Purpose</label>
+<select name="purpose" id="edit_purpose" style="width:100%;padding:0.8rem;">
+<option value="all">All</option>
+<option value="deposit">Deposit</option>
+<option value="withdraw">Withdraw</option>
+</select>
+</div>
+
+<div style="margin-bottom:1.4rem;">
 <label>Crypto?</label>
 <select name="crypto" id="edit_crypto" style="width:100%;padding:0.8rem;">
 <option value="1">Yes</option>
@@ -537,8 +583,6 @@ Edit
 </div>
 
 </div>
-
-<!-- EDIT CONVERSION RATE ALWAYS AVAILABLE -->
 
 <div style="margin-bottom:1.4rem;" id="editConversionRateSection">
 
@@ -634,6 +678,8 @@ document.getElementById("edit_name").value=m.name;
 document.getElementById("edit_wallet").value=m.wallet_address || "";
 document.getElementById("edit_crypto").value=m.crypto;
 document.getElementById("edit_type").value=m.type || "";
+document.getElementById("edit_purpose").value=m.purpose || "all";
+
 document.getElementById("edit_network").value=m.network || "";
 document.getElementById("edit_account_name").value=m.account_name || "";
 document.getElementById("edit_account_number").value=m.account_number || "";
