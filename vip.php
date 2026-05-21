@@ -359,7 +359,7 @@ class="vip-used-btn"
 onclick="usedVipPopup()"
 >
 
-Already Mined
+Unlocked
 
 </button>
 
