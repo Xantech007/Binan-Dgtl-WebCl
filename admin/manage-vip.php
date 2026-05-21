@@ -64,7 +64,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = (int)($_POST['id'] ?? 0);
             if ($id <= 0) throw new Exception("Invalid plan ID.");
 
-            // Check if any user is using this plan
             $stmt = $pdo->prepare("SELECT COUNT(*) FROM user_vip WHERE vip_id = ?");
             $stmt->execute([$id]);
             if ($stmt->fetchColumn() > 0) {
@@ -84,10 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // LOAD ALL VIP PLANS
 // --------------------------------------------------
 try {
-    $stmt = $pdo->query("
-        SELECT * FROM vip
-        ORDER BY id DESC
-    ");
+    $stmt = $pdo->query("SELECT * FROM vip ORDER BY id DESC");
     $plans = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     $error = "Failed to load VIP plans: " . $e->getMessage();
@@ -112,41 +108,41 @@ try {
   <!-- ADD NEW PLAN FORM -->
   <div style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:2rem; margin-bottom:3rem; max-width:1100px; margin-left:auto; margin-right:auto;">
     <h2 style="margin-bottom:1.5rem; text-align:center;">Add New VIP Plan</h2>
-  
-    <form method="POST">
+ 
+    <form method="POST" id="addForm">
       <input type="hidden" name="action" value="add">
       <div style="margin-bottom:1.4rem;">
         <label style="display:block; margin-bottom:0.5rem;">Plan Name *</label>
-        <input type="text" name="name" required style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
+        <input type="text" name="name" id="add_name" required style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
       </div>
 
       <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1.4rem; margin-bottom:1.4rem;">
         <div>
           <label style="display:block; margin-bottom:0.5rem;">Daily Tasks</label>
-          <input type="number" name="daily_tasks" min="0" value="0" style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
+          <input type="number" name="daily_tasks" id="add_daily_tasks" min="0" value="0" style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
         </div>
         <div>
           <label style="display:block; margin-bottom:0.5rem;">Activation Fee ($)</label>
-          <input type="number" name="activation_fee" step="0.01" min="0" value="0.00" style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
+          <input type="number" name="activation_fee" id="add_activation_fee" step="0.01" min="0" value="0.00" style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
         </div>
         <div>
           <label style="display:block; margin-bottom:0.5rem;">Duration (days)</label>
-          <input type="number" name="duration_days" min="1" value="30" style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
+          <input type="number" name="duration_days" id="add_duration_days" min="1" value="30" style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
         </div>
       </div>
 
       <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1.4rem; margin-bottom:2rem;">
         <div>
           <label style="display:block; margin-bottom:0.5rem;">Simple Interest (%)</label>
-          <input type="number" name="simple_interest" step="0.01" min="0" value="0.00" style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
+          <input type="number" name="simple_interest" id="add_simple_interest" step="0.01" readonly style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#1f2937; color:var(--text);">
         </div>
         <div>
           <label style="display:block; margin-bottom:0.5rem;">Daily Profit ($)</label>
-          <input type="number" name="daily_profit" step="0.01" min="0" value="0.00" style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
+          <input type="number" name="daily_profit" id="add_daily_profit" step="0.01" min="0" value="0.00" style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
         </div>
         <div>
           <label style="display:block; margin-bottom:0.5rem;">Total Profit ($)</label>
-          <input type="number" name="total_profit" step="0.01" min="0" value="0.00" style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
+          <input type="number" name="total_profit" id="add_total_profit" step="0.01" readonly style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#1f2937; color:var(--text);">
         </div>
       </div>
 
@@ -205,8 +201,7 @@ try {
                     onclick="openEditModal(<?= htmlspecialchars(json_encode($plan)) ?>)">
               <i class="fas fa-edit"></i> Edit
             </button>
-            <form method="POST" style="display:inline;"
-                  onsubmit="return confirm('Delete VIP plan «<?= htmlspecialchars(addslashes($plan['name'])) ?>»?');">
+            <form method="POST" style="display:inline;" onsubmit="return confirm('Delete VIP plan «<?= htmlspecialchars(addslashes($plan['name'])) ?>»?');">
               <input type="hidden" name="action" value="delete">
               <input type="hidden" name="id" value="<?= $plan['id'] ?>">
               <button type="submit" class="btn red" style="padding:0.5rem 1rem; font-size:0.9rem;">
@@ -224,12 +219,13 @@ try {
   <!-- EDIT MODAL -->
   <div id="editModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); align-items:center; justify-content:center; z-index:1000;">
     <div style="background:var(--card); border:1px solid var(--border); border-radius:12px; width:90%; max-width:1100px; max-height:90vh; overflow-y:auto; padding:2rem; position:relative;">
-      <button onclick="document.getElementById('editModal').style.display='none'"
+      <button onclick="document.getElementById('editModal').style.display='none'" 
               style="position:absolute; top:1rem; right:1.5rem; background:none; border:none; color:var(--text-muted); font-size:2rem; cursor:pointer;">
         ×
       </button>
       <h2 style="margin-bottom:1.8rem; text-align:center;">Edit VIP Plan</h2>
-      <form method="POST">
+      
+      <form method="POST" id="editForm">
         <input type="hidden" name="action" value="edit">
         <input type="hidden" name="id" id="edit_id">
         
@@ -256,7 +252,7 @@ try {
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:1.4rem; margin-bottom:2rem;">
           <div>
             <label style="display:block; margin-bottom:0.5rem;">Simple Interest (%)</label>
-            <input type="number" name="simple_interest" id="edit_simple_interest" step="0.01" min="0" style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
+            <input type="number" name="simple_interest" id="edit_simple_interest" step="0.01" readonly style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#1f2937; color:var(--text);">
           </div>
           <div>
             <label style="display:block; margin-bottom:0.5rem;">Daily Profit ($)</label>
@@ -264,7 +260,7 @@ try {
           </div>
           <div>
             <label style="display:block; margin-bottom:0.5rem;">Total Profit ($)</label>
-            <input type="number" name="total_profit" id="edit_total_profit" step="0.01" min="0" style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
+            <input type="number" name="total_profit" id="edit_total_profit" step="0.01" readonly style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#1f2937; color:var(--text);">
           </div>
         </div>
 
@@ -285,18 +281,60 @@ try {
 </main>
 
 <script>
+// Real-time Calculation Function
+function calculateProfits(formPrefix) {
+    const fee = parseFloat(document.getElementById(formPrefix + 'activation_fee').value) || 0;
+    const dailyProfit = parseFloat(document.getElementById(formPrefix + 'daily_profit').value) || 0;
+    const duration = parseInt(document.getElementById(formPrefix + 'duration_days').value) || 0;
+
+    // Calculate Total Profit
+    const totalProfit = dailyProfit * duration;
+    document.getElementById(formPrefix + 'total_profit').value = totalProfit.toFixed(2);
+
+    // Calculate Simple Interest (%)
+    let simpleInterest = 0;
+    if (fee > 0) {
+        simpleInterest = (totalProfit / fee) * 100;
+    }
+    document.getElementById(formPrefix + 'simple_interest').value = simpleInterest.toFixed(2);
+}
+
+// Add listeners for Add Form
+const addFields = ['activation_fee', 'daily_profit', 'duration_days'];
+addFields.forEach(field => {
+    const el = document.getElementById('add_' + field);
+    if (el) {
+        el.addEventListener('input', () => calculateProfits('add_'));
+    }
+});
+
+// Add listeners for Edit Modal
+const editFields = ['activation_fee', 'daily_profit', 'duration_days'];
+editFields.forEach(field => {
+    const el = document.getElementById('edit_' + field);
+    if (el) {
+        el.addEventListener('input', () => calculateProfits('edit_'));
+    }
+});
+
+// Open Edit Modal + Trigger Calculation
 function openEditModal(plan) {
   document.getElementById('edit_id').value = plan.id;
   document.getElementById('edit_name').value = plan.name;
   document.getElementById('edit_daily_tasks').value = plan.daily_tasks;
-  document.getElementById('edit_simple_interest').value = plan.simple_interest;
-  document.getElementById('edit_daily_profit').value = plan.daily_profit;
-  document.getElementById('edit_total_profit').value = plan.total_profit;
   document.getElementById('edit_activation_fee').value = plan.activation_fee;
   document.getElementById('edit_duration_days').value = plan.duration_days;
+  document.getElementById('edit_daily_profit').value = plan.daily_profit;
   document.getElementById('edit_status').value = plan.status;
 
+  // Set calculated fields
+  document.getElementById('edit_simple_interest').value = parseFloat(plan.simple_interest).toFixed(2);
+  document.getElementById('edit_total_profit').value = parseFloat(plan.total_profit).toFixed(2);
+
   document.getElementById('editModal').style.display = 'flex';
+
+  // Trigger calculation in case values change
+  setTimeout(() => calculateProfits('edit_'), 100);
 }
 </script>
 
