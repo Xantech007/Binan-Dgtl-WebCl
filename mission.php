@@ -18,18 +18,11 @@ if(!isset($_SESSION['user_id'])){
 $user_id = $_SESSION['user_id'];
 
 
-/* AUTO EXPIRE VIP */
-
-$current_time = date("Y-m-d H:i:s");
-
-$pdo->prepare("
-UPDATE user_vip
-SET status=0
-WHERE end_time <= ?
-")->execute([$current_time]);
-
-
-/* CLAIM VIP PROFIT */
+/*
+|--------------------------------------------------------------------------
+| CLAIM VIP PROFIT
+|--------------------------------------------------------------------------
+*/
 
 if(isset($_POST['claim_vip'])){
 
@@ -39,7 +32,7 @@ if(isset($_POST['claim_vip'])){
     SELECT uv.*,v.daily_profit,v.activation_fee,v.duration_days
     FROM user_vip uv
     JOIN vip v ON uv.vip_id=v.id
-    WHERE uv.id=? AND uv.user_id=? AND uv.status=1
+    WHERE uv.id=? AND uv.user_id=?
     ");
 
     $stmt->execute([$user_vip_id,$user_id]);
@@ -48,16 +41,23 @@ if(isset($_POST['claim_vip'])){
 
     if($vip){
 
+        $start = strtotime($vip['start_time']);
+        $end   = strtotime($vip['end_time']);
+        $now   = time();
+
         /*
         |--------------------------------------------------------------------------
-        | GMT+1 TIMESTAMPS
+        | LIMIT DAYS TO VIP DURATION
         |--------------------------------------------------------------------------
         */
 
-        $start = strtotime($vip['start_time']);
-        $now   = time();
+        $max_days = $vip['duration_days'];
 
         $days_passed = floor(($now - $start) / 86400);
+
+        if($days_passed > $max_days){
+            $days_passed = $max_days;
+        }
 
         $claimable_days = $days_passed - $vip['claimed_days'];
 
@@ -65,12 +65,12 @@ if(isset($_POST['claim_vip'])){
 
             $profit = $claimable_days * $vip['daily_profit'];
 
-            /* ADD BALANCE */
+            /* ADD USER BALANCE */
 
             $pdo->prepare("
             UPDATE users
-            SET balance=balance+?
-            WHERE id=?
+            SET balance = balance + ?
+            WHERE id = ?
             ")->execute([$profit,$user_id]);
 
 
@@ -78,14 +78,39 @@ if(isset($_POST['claim_vip'])){
 
             $new_claimed = $vip['claimed_days'] + $claimable_days;
 
-            $pdo->prepare("
-            UPDATE user_vip
-            SET claimed_days=?
-            WHERE id=?
-            ")->execute([$new_claimed,$user_vip_id]);
+            /*
+            |--------------------------------------------------------------------------
+            | AUTO COMPLETE VIP ONLY AFTER FULL CLAIM
+            |--------------------------------------------------------------------------
+            */
+
+            if($new_claimed >= $max_days){
+
+                $pdo->prepare("
+                UPDATE user_vip
+                SET claimed_days=?,
+                    status=0
+                WHERE id=?
+                ")->execute([
+                    $new_claimed,
+                    $user_vip_id
+                ]);
+
+            } else {
+
+                $pdo->prepare("
+                UPDATE user_vip
+                SET claimed_days=?
+                WHERE id=?
+                ")->execute([
+                    $new_claimed,
+                    $user_vip_id
+                ]);
+
+            }
 
 
-            /* SAVE CLAIM */
+            /* SAVE CLAIM HISTORY */
 
             $claimed_at = date("Y-m-d H:i:s");
 
@@ -119,7 +144,11 @@ if(isset($_POST['claim_vip'])){
 }
 
 
-/* FETCH RESET TIME */
+/*
+|--------------------------------------------------------------------------
+| FETCH RESET TIME
+|--------------------------------------------------------------------------
+*/
 
 $stmt = $pdo->query("
 SELECT reset_time
@@ -134,7 +163,7 @@ $reset_time = strtotime($reset['reset_time']);
 $now = time();
 
 
-/* IF RESET TIME EXPIRED → ADD 12 HOURS */
+/* RESET TASK TIMER */
 
 if($reset_time <= $now){
 
@@ -153,13 +182,25 @@ if($reset_time <= $now){
 }
 
 
-/* GET RUNNING VIP */
+/*
+|--------------------------------------------------------------------------
+| GET RUNNING VIP
+|--------------------------------------------------------------------------
+|
+| IMPORTANT:
+| VIP REMAINS "IN PROGRESS"
+| EVEN AFTER END TIME
+| UNTIL ALL PROFITS ARE CLAIMED
+|
+*/
 
 $stmt = $pdo->prepare("
 SELECT uv.*,v.daily_profit,v.activation_fee,v.duration_days
 FROM user_vip uv
 JOIN vip v ON uv.vip_id=v.id
-WHERE uv.user_id=? AND uv.status=1
+WHERE uv.user_id=?
+AND uv.claimed_days < v.duration_days
+ORDER BY uv.id DESC
 ");
 
 $stmt->execute([$user_id]);
@@ -167,7 +208,11 @@ $stmt->execute([$user_id]);
 $running_vips = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 
-/* CLAIM HISTORY */
+/*
+|--------------------------------------------------------------------------
+| CLAIM HISTORY
+|--------------------------------------------------------------------------
+*/
 
 $stmt = $pdo->prepare("
 SELECT vc.*,v.activation_fee
@@ -182,7 +227,11 @@ $stmt->execute([$user_id]);
 $completed = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 
-/* TASK COUNTS */
+/*
+|--------------------------------------------------------------------------
+| TASK COUNTS
+|--------------------------------------------------------------------------
+*/
 
 $today_tasks = count($completed);
 
@@ -264,9 +313,24 @@ $now   = time();
 
 $total_days = $vip['duration_days'];
 
+
+/*
+|--------------------------------------------------------------------------
+| STOP COUNTING AFTER VIP END
+|--------------------------------------------------------------------------
+*/
+
 $days_passed = floor(($now - $start) / 86400);
 
+if($days_passed > $total_days){
+    $days_passed = $total_days;
+}
+
 $claimable = $days_passed - $vip['claimed_days'];
+
+if($claimable < 0){
+    $claimable = 0;
+}
 
 $earned = $vip['claimed_days'] * $vip['daily_profit'];
 
@@ -277,7 +341,11 @@ $remaining_profit = $total_profit - $earned;
 $profit = $claimable * $vip['daily_profit'];
 
 
-/* NEXT DAILY TIMER */
+/*
+|--------------------------------------------------------------------------
+| NEXT DAILY TIMER
+|--------------------------------------------------------------------------
+*/
 
 $next_day_time = $start + (($days_passed + 1) * 86400);
 
@@ -285,6 +353,19 @@ $remaining_seconds = $next_day_time - $now;
 
 if($remaining_seconds < 0){
     $remaining_seconds = 0;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| IF VIP FINISHED BUT CLAIM PENDING
+|--------------------------------------------------------------------------
+*/
+
+$expired_but_unclaimed = false;
+
+if($now > $end && $claimable > 0){
+    $expired_but_unclaimed = true;
 }
 
 ?>
@@ -336,6 +417,8 @@ if($remaining_seconds < 0){
 
 
 
+<?php if(!$expired_but_unclaimed): ?>
+
 <div class="vip-progress">
 
 <div class="progress-bar">
@@ -356,6 +439,22 @@ data-time="<?php echo $remaining_seconds; ?>"
 </div>
 
 </div>
+
+<?php else: ?>
+
+<div style="
+margin-top:15px;
+padding:10px;
+background:#1e3a1e;
+color:#7CFC00;
+border-radius:8px;
+font-weight:bold;
+text-align:center;
+">
+VIP ended — claim remaining profit
+</div>
+
+<?php endif; ?>
 
 </div>
 
