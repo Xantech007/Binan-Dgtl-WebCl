@@ -202,10 +202,35 @@ Task Reset Countdown
 <?php while($vip = $vipQuery->fetch(PDO::FETCH_ASSOC)): ?>
 
 <?php
-$isUnlocked = intval($user['vip_level']) >= intval($vip['id']);
+
+/*
+|--------------------------------------------------------------------------
+| CHECK IF CURRENT USER HAS UNLOCKED THIS VIP
+|--------------------------------------------------------------------------
+|
+| A VIP is unlocked ONLY if the logged in user
+| has ever activated it before.
+|
+*/
+
+$stmtCheck = $pdo->prepare("
+SELECT id
+FROM user_vip
+WHERE user_id = ?
+AND vip_id = ?
+LIMIT 1
+");
+
+$stmtCheck->execute([
+    $user_id,
+    $vip['id']
+]);
+
+$isUnlocked = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+
 ?>
 
-<a href="vip.php?id=<?php echo $vip['id']; ?>" 
+<a href="vip.php?id=<?php echo $vip['id']; ?>"
 class="task-card <?php echo $isUnlocked ? 'unlocked' : 'locked'; ?>">
 
 <div class="task-left">
@@ -215,8 +240,6 @@ class="task-card <?php echo $isUnlocked ? 'unlocked' : 'locked'; ?>">
 <div class="vip-badge-card">
 <?php echo htmlspecialchars($vip['name']); ?>
 </div>
-
-<!-- ONLY SHOW LOCK ICON FOR LOCKED VIP -->
 
 <?php if(!$isUnlocked): ?>
 <i class="fa-solid fa-lock lock-overlay"></i>
@@ -228,7 +251,9 @@ class="task-card <?php echo $isUnlocked ? 'unlocked' : 'locked'; ?>">
 
 <div class="unlock-text">
 Unlock amount
-<span>$<?php echo number_format($vip['activation_fee'] ?? 0,2); ?></span>
+<span>
+$<?php echo number_format($vip['activation_fee'] ?? 0,2); ?>
+</span>
 </div>
 
 <div class="vip-name">
