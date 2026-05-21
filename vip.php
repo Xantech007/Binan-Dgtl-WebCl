@@ -421,7 +421,7 @@ Cancel
 <div class="popup-box">
 
 <p style="margin-bottom:20px;">
-You have already unlocked and mined this VIP plan once.
+You already unlocked this VIP, choose another VIP to unlock.
 </p>
 
 <button
