@@ -45,11 +45,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         /* PAYSTACK RESET */
         if ($type === 'paystack') {
+
             $wallet_address = '';
             $network = '';
             $account_name = '';
             $account_number = '';
-            $conversion_rate = 1;
+
+            /* KEEP CONVERSION RATE AVAILABLE */
+            if ($conversion_rate <= 0) {
+                $conversion_rate = 1;
+            }
         }
 
         /* QR UPLOAD */
@@ -261,7 +266,7 @@ $methods = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </select>
 </div>
 
-<div id="nonPaystackFields">
+<div id="detailsFields">
 
 <div style="margin-bottom:1.4rem;" id="walletSection">
 <label>Wallet Address</label>
@@ -287,16 +292,23 @@ $methods = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 </div>
 
+</div>
+
+<!-- CONVERSION RATE NOW AVAILABLE FOR ALL INCLUDING PAYSTACK -->
+
 <div style="margin-bottom:1.4rem;" id="conversionRateSection">
 
 <label>Conversion Rate</label>
 
-<input type="number" step="0.00000001" name="conversion_rate" id="rateInput" value="1" style="width:100%;padding:0.8rem;">
+<input type="number"
+step="0.00000001"
+name="conversion_rate"
+id="rateInput"
+value="1"
+style="width:100%;padding:0.8rem;">
 
 <div style="margin-top:6px;font-size:13px;color:#9ca3af;">
 Preview: <span id="conversionPreview">1 USD = 1</span>
-</div>
-
 </div>
 
 </div>
@@ -508,7 +520,7 @@ Edit
 </select>
 </div>
 
-<div id="editNonPaystackFields">
+<div id="editDetailsFields">
 
 <div style="margin-bottom:1.4rem;" id="editWalletSection">
 <input type="text" name="wallet_address" id="edit_wallet" style="width:100%;padding:0.8rem;">
@@ -524,16 +536,22 @@ Edit
 
 </div>
 
+</div>
+
+<!-- EDIT CONVERSION RATE ALWAYS AVAILABLE -->
+
 <div style="margin-bottom:1.4rem;" id="editConversionRateSection">
 
 <label>Conversion Rate</label>
 
-<input type="number" step="0.00000001" name="conversion_rate" id="edit_rate" style="width:100%;padding:0.8rem;">
+<input type="number"
+step="0.00000001"
+name="conversion_rate"
+id="edit_rate"
+style="width:100%;padding:0.8rem;">
 
 <div style="margin-top:6px;font-size:13px;color:#9ca3af;">
 Preview: <span id="editConversionPreview">1 USD = 1</span>
-</div>
-
 </div>
 
 </div>
@@ -635,6 +653,9 @@ m.image ? `<img src="../${m.image}" style="max-width:80px">` : "No logo";
 document.getElementById("edit_qr_preview").innerHTML =
 m.qr_image ? `<img src="../${m.qr_image}" style="max-width:80px">` : "No QR";
 
+document.getElementById("editConversionPreview").innerText =
+"1 USD = " + (parseFloat(m.conversion_rate) || 1);
+
 toggleEditFields();
 
 }
@@ -650,17 +671,15 @@ const typeSelect = document.getElementById("typeSelect");
 
 const walletSection = document.getElementById("walletSection");
 const bankSection = document.getElementById("bankSection");
-const nonPaystackFields = document.getElementById("nonPaystackFields");
 
 function toggleFields(){
 
 if(typeSelect.value === "paystack"){
 
-nonPaystackFields.style.display = "none";
+walletSection.style.display = "none";
+bankSection.style.display = "none";
 
 }else{
-
-nonPaystackFields.style.display = "block";
 
 if(cryptoSelect.value == "1"){
 
@@ -695,17 +714,15 @@ const editType = document.getElementById("edit_type");
 
 const editWallet = document.getElementById("editWalletSection");
 const editBank = document.getElementById("editBankSection");
-const editNonPaystackFields = document.getElementById("editNonPaystackFields");
 
 function toggleEditFields(){
 
 if(editType.value === "paystack"){
 
-editNonPaystackFields.style.display = "none";
+editWallet.style.display = "none";
+editBank.style.display = "none";
 
 }else{
-
-editNonPaystackFields.style.display = "block";
 
 if(editCrypto.value == "1"){
 
