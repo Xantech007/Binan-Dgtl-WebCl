@@ -68,6 +68,13 @@ try{
 
     /*
     |--------------------------------------------------------------------------
+    | START TRANSACTION
+    |--------------------------------------------------------------------------
+    */
+    $pdo->beginTransaction();
+
+    /*
+    |--------------------------------------------------------------------------
     | APPROVE ONLY THIS EXACT DEPOSIT
     |--------------------------------------------------------------------------
     */
@@ -87,17 +94,45 @@ try{
     ]);
 
     /* VERIFY UPDATE */
-    if($update->rowCount() > 0){
+    if($update->rowCount() <= 0){
 
-        $_SESSION['recharge_msg'] = "Payment approved successfully.";
-
-    }else{
+        $pdo->rollBack();
 
         $_SESSION['withdraw_msg'] = "Unable to approve payment.";
 
+        header("Location: ../../index.php");
+        exit;
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | CREDIT USER BALANCE
+    |--------------------------------------------------------------------------
+    */
+    $amount = (float)$deposit['amount'];
+
+    $credit = $pdo->prepare("
+        UPDATE users
+        SET balance = balance + ?
+        WHERE id = ?
+        LIMIT 1
+    ");
+
+    $credit->execute([
+        $amount,
+        $user_id
+    ]);
+
+    /* COMMIT */
+    $pdo->commit();
+
+    $_SESSION['recharge_msg'] = "Payment approved successfully. $$amount added to your balance.";
+
 }catch(Exception $e){
+
+    if($pdo->inTransaction()){
+        $pdo->rollBack();
+    }
 
     $_SESSION['withdraw_msg'] = "An error occurred while approving payment.";
 
