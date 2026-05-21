@@ -43,8 +43,13 @@ if($_SERVER['REQUEST_METHOD'] == "POST"){
     $amount = (float)($_POST['amount'] ?? 0);
 
     if($amount <= 0){
+
         $msg = "Please select amount.";
+
     }else{
+
+        $paid_amount = $_POST['paid_amount'] ?? $amount;
+        $paid_currency = $_POST['paid_currency'] ?? ($method['currency'] ?: 'USD');
 
         /* ================= PAYSTACK ================= */
 
@@ -81,8 +86,8 @@ if($_SERVER['REQUEST_METHOD'] == "POST"){
                 $user_id,
                 $method_id,
                 $amount,
-                $amount,
-                $method['currency'] ?: 'USD',
+                $paid_amount,
+                $paid_currency,
                 '',
                 'yes'
             ]);
@@ -103,9 +108,6 @@ if($_SERVER['REQUEST_METHOD'] == "POST"){
         /* ================= NORMAL METHODS ================= */
 
         else{
-
-            $paid_amount = $_POST['paid_amount'] ?? 0;
-            $paid_currency = $_POST['paid_currency'] ?? 'USD';
 
             if(isset($_FILES['proof']) && $_FILES['proof']['error'] == 0){
 
@@ -317,34 +319,34 @@ if($_SERVER['REQUEST_METHOD'] == "POST"){
 
         </div>
 
+        <!-- AMOUNT TO PAY -->
+        <div class="upload-proof">
+
+            <label>
+                Amount to Pay
+                (
+                <span id="currencyLabel">
+                    <?php echo htmlspecialchars($method['currency']); ?>
+                </span>
+                )
+            </label>
+
+            <input type="text"
+                   id="convertedAmount"
+                   readonly>
+
+            <input type="hidden"
+                   name="paid_amount"
+                   id="paidAmountInput">
+
+            <input type="hidden"
+                   name="paid_currency"
+                   value="<?php echo htmlspecialchars($method['currency']); ?>">
+
+        </div>
+
         <!-- NORMAL METHODS ONLY -->
         <?php if($method['type'] != "paystack"): ?>
-
-            <!-- CONVERTED AMOUNT -->
-            <div class="upload-proof">
-
-                <label>
-                    Amount to Pay
-                    (
-                    <span id="currencyLabel">
-                        <?php echo htmlspecialchars($method['currency']); ?>
-                    </span>
-                    )
-                </label>
-
-                <input type="text"
-                       id="convertedAmount"
-                       readonly>
-
-                <input type="hidden"
-                       name="paid_amount"
-                       id="paidAmountInput">
-
-                <input type="hidden"
-                       name="paid_currency"
-                       value="<?php echo htmlspecialchars($method['currency']); ?>">
-
-            </div>
 
             <!-- PROOF -->
             <div class="upload-proof">
@@ -432,7 +434,6 @@ const converted = document.getElementById("convertedAmount");
 
 const hiddenPaid = document.getElementById("paidAmountInput");
 
-/* ONLY FOR NORMAL METHODS */
 if(usdInput && converted){
 
     usdInput.addEventListener("change", function(){
@@ -450,3 +451,4 @@ if(usdInput && converted){
 }
 
 </script>
+<?php include "inc/footer.php"; ?>
