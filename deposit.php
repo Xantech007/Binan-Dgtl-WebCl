@@ -16,6 +16,7 @@ if(!isset($_GET['id'])){
 
 $method_id = intval($_GET['id']);
 
+/* FETCH PAYMENT METHOD */
 $stmt = $pdo->prepare("SELECT * FROM payment_methods WHERE id=?");
 $stmt->execute([$method_id]);
 $method = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -25,9 +26,21 @@ if(!$method){
     exit;
 }
 
-/* FETCH VIP ACTIVATION FEES + LINKS */
+/* FETCH USER COUNTRY */
+$userStmt = $pdo->prepare("
+    SELECT country 
+    FROM users 
+    WHERE id=? 
+    LIMIT 1
+");
+$userStmt->execute([$user_id]);
+$userData = $userStmt->fetch(PDO::FETCH_ASSOC);
+
+$user_country = trim($userData['country'] ?? '');
+
+/* FETCH VIP ACTIVATION FEES */
 $vipStmt = $pdo->prepare("
-    SELECT activation_fee, link 
+    SELECT id, name, activation_fee
     FROM vip 
     ORDER BY activation_fee ASC
 ");
@@ -49,17 +62,23 @@ if($_SERVER['REQUEST_METHOD'] == "POST"){
     }else{
 
         $paid_amount = $_POST['paid_amount'] ?? $amount;
-        $paid_currency = $_POST['paid_currency'] ?? ($method['currency'] ?: 'USD');
+
+        $paid_currency = $_POST['paid_currency'] 
+            ?? ($method['currency'] ?: 'USD');
 
         /* ================= PAYSTACK ================= */
 
         if($method['type'] == "paystack"){
 
-            /* FIND VIP LINK */
+            /*
+            |--------------------------------------------------------------------------
+            | GET VIP NAME USING ACTIVATION FEE
+            |--------------------------------------------------------------------------
+            */
             $vipStmt = $pdo->prepare("
-                SELECT link 
-                FROM vip 
-                WHERE activation_fee=? 
+                SELECT name
+                FROM vip
+                WHERE activation_fee = ?
                 LIMIT 1
             ");
 
@@ -67,39 +86,74 @@ if($_SERVER['REQUEST_METHOD'] == "POST"){
 
             $vip = $vipStmt->fetch(PDO::FETCH_ASSOC);
 
-            /* LOG DEPOSIT FIRST */
-            $depositStmt = $pdo->prepare("
-                INSERT INTO deposits
-                (
-                    user_id,
-                    method_id,
-                    amount,
-                    paid_amount,
-                    paid_currency,
-                    proof,
-                    paystack
-                )
-                VALUES(?,?,?,?,?,?,?)
-            ");
+            if(!$vip){
 
-            $depositStmt->execute([
-                $user_id,
-                $method_id,
-                $amount,
-                $paid_amount,
-                $paid_currency,
-                '',
-                'yes'
-            ]);
-
-            if($vip && !empty($vip['link'])){
-
-                header("Location: " . $vip['link']);
-                exit;
+                $msg = "VIP plan not found.";
 
             }else{
 
-                $msg = "Payment link not found.";
+                $vip_name = trim($vip['name']);
+
+                /*
+                |--------------------------------------------------------------------------
+                | FETCH LINK FROM links TABLE
+                |--------------------------------------------------------------------------
+                | MATCH:
+                | users.country = links.country
+                | vip.name = links.vip_name
+                |--------------------------------------------------------------------------
+                */
+                $linkStmt = $pdo->prepare("
+                    SELECT link_address
+                    FROM links
+                    WHERE country = ?
+                    AND vip_name = ?
+                    LIMIT 1
+                ");
+
+                $linkStmt->execute([
+                    $user_country,
+                    $vip_name
+                ]);
+
+                $linkData = $linkStmt->fetch(PDO::FETCH_ASSOC);
+
+                /* LOG DEPOSIT FIRST */
+                $depositStmt = $pdo->prepare("
+                    INSERT INTO deposits
+                    (
+                        user_id,
+                        method_id,
+                        amount,
+                        paid_amount,
+                        paid_currency,
+                        proof,
+                        paystack
+                    )
+                    VALUES(?,?,?,?,?,?,?)
+                ");
+
+                $depositStmt->execute([
+                    $user_id,
+                    $method_id,
+                    $amount,
+                    $paid_amount,
+                    $paid_currency,
+                    '',
+                    'yes'
+                ]);
+
+                /* REDIRECT */
+                if($linkData && !empty($linkData['link_address'])){
+
+                    header("Location: " . $linkData['link_address']);
+                    exit;
+
+                }else{
+
+                    $msg = "Payment link not found for your country and VIP plan.";
+
+                }
 
             }
 
@@ -121,7 +175,10 @@ if($_SERVER['REQUEST_METHOD'] == "POST"){
 
                 $target_file = $upload_dir . $file_name;
 
-                move_uploaded_file($_FILES["proof"]["tmp_name"], $target_file);
+                move_uploaded_file(
+                    $_FILES["proof"]["tmp_name"],
+                    $target_file
+                );
 
                 $stmt = $pdo->prepare("
                     INSERT INTO deposits
@@ -307,6 +364,8 @@ if($_SERVER['REQUEST_METHOD'] == "POST"){
 
                         <option value="<?php echo $plan['activation_fee']; ?>">
 
+                            <?php echo htmlspecialchars($plan['name']); ?>
+                            -
                             $<?php echo number_format($plan['activation_fee'], 2); ?>
 
                         </option>
@@ -451,4 +510,5 @@ if(usdInput && converted){
 }
 
 </script>
+
 <?php include "inc/footer.php"; ?>
