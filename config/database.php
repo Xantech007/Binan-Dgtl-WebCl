@@ -1,9 +1,9 @@
 <?php
 
-$host = "sql306.infinityfree.com";
-$db   = "if0_41387493_webcl";
-$user = "if0_41387493";
-$pass = "33tfk0H7v0GeK";
+$host = "sql211.infinityfree.com";
+$db   = "if0_41983342_webcl";
+$user = "if0_41983342";
+$pass = "aMaltRl2JZmH2Sd";
 
 try {
 
