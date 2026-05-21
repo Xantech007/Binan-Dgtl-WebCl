@@ -1,3 +1,5 @@
+===Database if0_41387493_webcl
+
 == Table structure for table admins
 
 |------
@@ -6,6 +8,7 @@
 |//**id**//|int(11)|No|
 |**username**|varchar(50)|No|
 |**email**|varchar(100)|No|
+|whatsapp|varchar(20)|Yes|NULL
 |password_hash|varchar(255)|No|
 |full_name|varchar(100)|Yes|NULL
 |role|enum('superadmin', 'admin', 'moderator')|Yes|admin
@@ -23,18 +26,29 @@
 |method_id|int(11)|Yes|NULL
 |proof|varchar(255)|Yes|NULL
 |status|int(11)|Yes|0
+|paystack|enum('yes', 'no')|No|no
 |created_at|timestamp|Yes|current_timestamp()
 |updated_at|timestamp|Yes|NULL
 |amount|decimal(10,2)|Yes|0.00
 |paid_amount|decimal(18,2)|Yes|NULL
 |paid_currency|varchar(10)|Yes|NULL
+== Table structure for table links
+
+|------
+|Column|Type|Null|Default
+|------
+|//**id**//|int(11)|No|
+|country|varchar(150)|No|
+|vip_name|varchar(150)|No|
+|link_address|text|No|
+|created_at|timestamp|Yes|current_timestamp()
 == Table structure for table news
 
 |------
 |Column|Type|Null|Default
 |------
 |//**id**//|int(11)|No|
-|title|text|Yes|NULL
+|title|mediumtext|Yes|NULL
 |status|tinyint(1)|Yes|1
 |created_at|timestamp|Yes|current_timestamp()
 |updated_at|timestamp|Yes|NULL
@@ -51,7 +65,7 @@
 |withdrawal_fee|decimal(10,2)|No|0.00
 |qr_image|varchar(255)|Yes|NULL
 |crypto|tinyint(1)|No|0
-|type|enum('bank', 'momo')|No|bank
+|type|enum('bank', 'momo', 'paystack')|No|
 |network|varchar(100)|Yes|NULL
 |account_name|varchar(150)|Yes|NULL
 |account_number|varchar(150)|Yes|NULL
