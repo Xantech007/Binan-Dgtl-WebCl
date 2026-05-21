@@ -6,7 +6,7 @@ require_once "../../config/database.php";
 /* USER MUST BE LOGGED IN */
 if(!isset($_SESSION['user_id'])){
 
-    $_SESSION['error_msg'] = "Please login first.";
+    $_SESSION['withdraw_msg'] = "Please login first.";
 
     header("Location: ../../index.php");
     exit;
@@ -36,7 +36,7 @@ try{
     /* NO DEPOSIT */
     if(!$deposit){
 
-        $_SESSION['error_msg'] = "No deposit found.";
+        $_SESSION['withdraw_msg'] = "No deposit found.";
 
         header("Location: ../../index.php");
         exit;
@@ -51,7 +51,7 @@ try{
     /* MUST BE PAYSTACK */
     if($deposit['paystack'] !== 'yes'){
 
-        $_SESSION['error_msg'] = "Latest deposit is not a Paystack payment.";
+        $_SESSION['withdraw_msg'] = "Latest deposit is not a Paystack payment.";
 
         header("Location: ../../index.php");
         exit;
@@ -60,7 +60,7 @@ try{
     /* MUST STILL BE PENDING */
     if((string)$deposit['status'] !== "0"){
 
-        $_SESSION['error_msg'] = "Deposit already processed.";
+        $_SESSION['withdraw_msg'] = "Deposit already processed.";
 
         header("Location: ../../index.php");
         exit;
@@ -89,17 +89,17 @@ try{
     /* VERIFY UPDATE */
     if($update->rowCount() > 0){
 
-        $_SESSION['success_msg'] = "Payment approved successfully.";
+        $_SESSION['recharge_msg'] = "Payment approved successfully.";
 
     }else{
 
-        $_SESSION['error_msg'] = "Unable to approve payment.";
+        $_SESSION['withdraw_msg'] = "Unable to approve payment.";
 
     }
 
 }catch(Exception $e){
 
-    $_SESSION['error_msg'] = "An error occurred while approving payment.";
+    $_SESSION['withdraw_msg'] = "An error occurred while approving payment.";
 
 }
 
