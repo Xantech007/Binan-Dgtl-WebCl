@@ -12,7 +12,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         if ($action === 'add' || $action === 'edit') {
             $name = trim($_POST['name'] ?? '');
-            $link = trim($_POST['link'] ?? '');
             $daily_tasks = (int)($_POST['daily_tasks'] ?? 0);
             $simple_interest = (float)($_POST['simple_interest'] ?? 0);
             $daily_profit = (float)($_POST['daily_profit'] ?? 0);
@@ -27,17 +26,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($action === 'add') {
                 $stmt = $pdo->prepare("
-                    INSERT INTO vip 
-                    (name, link, daily_tasks, simple_interest, daily_profit, total_profit,
+                    INSERT INTO vip
+                    (name, daily_tasks, simple_interest, daily_profit, total_profit,
                      activation_fee, status, duration_days)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 ");
                 $stmt->execute([
-                    $name, $link, $daily_tasks, $simple_interest, $daily_profit,
+                    $name, $daily_tasks, $simple_interest, $daily_profit,
                     $total_profit, $activation_fee, $status, $duration_days
                 ]);
                 $message = "New VIP plan added successfully.";
-            } 
+            }
             else if ($action === 'edit') {
                 $id = (int)($_POST['id'] ?? 0);
                 if ($id <= 0) throw new Exception("Invalid plan ID.");
@@ -45,7 +44,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt = $pdo->prepare("
                     UPDATE vip SET
                         name = ?,
-                        link = ?,
                         daily_tasks = ?,
                         simple_interest = ?,
                         daily_profit = ?,
@@ -56,12 +54,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     WHERE id = ?
                 ");
                 $stmt->execute([
-                    $name, $link, $daily_tasks, $simple_interest, $daily_profit,
+                    $name, $daily_tasks, $simple_interest, $daily_profit,
                     $total_profit, $activation_fee, $status, $duration_days, $id
                 ]);
                 $message = "VIP plan updated successfully.";
             }
-        } 
+        }
         else if ($action === 'delete') {
             $id = (int)($_POST['id'] ?? 0);
             if ($id <= 0) throw new Exception("Invalid plan ID.");
@@ -87,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // --------------------------------------------------
 try {
     $stmt = $pdo->query("
-        SELECT * FROM vip 
+        SELECT * FROM vip
         ORDER BY id DESC
     ");
     $plans = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -96,7 +94,6 @@ try {
     $plans = [];
 }
 ?>
-
 <main>
   <h1 style="text-align:center; margin: 2.5rem 0 2rem;">Manage VIP Plans</h1>
 
@@ -115,19 +112,12 @@ try {
   <!-- ADD NEW PLAN FORM -->
   <div style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:2rem; margin-bottom:3rem; max-width:1100px; margin-left:auto; margin-right:auto;">
     <h2 style="margin-bottom:1.5rem; text-align:center;">Add New VIP Plan</h2>
-   
+  
     <form method="POST">
       <input type="hidden" name="action" value="add">
-
       <div style="margin-bottom:1.4rem;">
         <label style="display:block; margin-bottom:0.5rem;">Plan Name *</label>
         <input type="text" name="name" required style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
-      </div>
-
-      <div style="margin-bottom:1.4rem;">
-        <label style="display:block; margin-bottom:0.5rem;">Paystack Link (URL)</label>
-        <input type="url" name="link" placeholder="https://paystack.com/link" 
-               style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
       </div>
 
       <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1.4rem; margin-bottom:1.4rem;">
@@ -186,7 +176,6 @@ try {
         <tr style="background:#1f2937;">
           <th style="padding:1rem; border-top-left-radius:8px;">ID</th>
           <th style="padding:1rem;">Name</th>
-          <th style="padding:1rem;">Link</th>
           <th style="padding:1rem;">Fee</th>
           <th style="padding:1rem;">Duration</th>
           <th style="padding:1rem;">Daily Tasks</th>
@@ -201,15 +190,6 @@ try {
         <tr style="background:var(--card);">
           <td style="padding:1.1rem; text-align:center;"><?= $plan['id'] ?></td>
           <td style="padding:1.1rem;"><?= htmlspecialchars($plan['name']) ?></td>
-          <td style="padding:1.1rem;">
-            <?php if (!empty($plan['link'])): ?>
-              <a href="<?= htmlspecialchars($plan['link']) ?>" target="_blank" style="color:#58a6ff; text-decoration:underline;">
-                🔗 View Link
-              </a>
-            <?php else: ?>
-              <span style="color:var(--text-muted); font-style:italic;">—</span>
-            <?php endif; ?>
-          </td>
           <td style="padding:1.1rem; text-align:right;">$<?= number_format($plan['activation_fee'], 2) ?></td>
           <td style="padding:1.1rem; text-align:center;"><?= $plan['duration_days'] ?> days</td>
           <td style="padding:1.1rem; text-align:center;"><?= $plan['daily_tasks'] ?></td>
@@ -225,7 +205,7 @@ try {
                     onclick="openEditModal(<?= htmlspecialchars(json_encode($plan)) ?>)">
               <i class="fas fa-edit"></i> Edit
             </button>
-            <form method="POST" style="display:inline;" 
+            <form method="POST" style="display:inline;"
                   onsubmit="return confirm('Delete VIP plan «<?= htmlspecialchars(addslashes($plan['name'])) ?>»?');">
               <input type="hidden" name="action" value="delete">
               <input type="hidden" name="id" value="<?= $plan['id'] ?>">
@@ -249,20 +229,13 @@ try {
         ×
       </button>
       <h2 style="margin-bottom:1.8rem; text-align:center;">Edit VIP Plan</h2>
-
       <form method="POST">
         <input type="hidden" name="action" value="edit">
         <input type="hidden" name="id" id="edit_id">
-
+        
         <div style="margin-bottom:1.4rem;">
           <label style="display:block; margin-bottom:0.5rem;">Plan Name *</label>
           <input type="text" name="name" id="edit_name" required style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
-        </div>
-
-        <div style="margin-bottom:1.4rem;">
-          <label style="display:block; margin-bottom:0.5rem;">Paystack Link (URL)</label>
-          <input type="url" name="link" id="edit_link" placeholder="https://paystack.com/link"
-                 style="width:100%; padding:0.8rem; border:1px solid var(--border); border-radius:6px; background:#0d1117; color:var(--text);">
         </div>
 
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:1.4rem; margin-bottom:1.4rem;">
@@ -315,7 +288,6 @@ try {
 function openEditModal(plan) {
   document.getElementById('edit_id').value = plan.id;
   document.getElementById('edit_name').value = plan.name;
-  document.getElementById('edit_link').value = plan.link || '';
   document.getElementById('edit_daily_tasks').value = plan.daily_tasks;
   document.getElementById('edit_simple_interest').value = plan.simple_interest;
   document.getElementById('edit_daily_profit').value = plan.daily_profit;
