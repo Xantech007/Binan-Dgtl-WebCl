@@ -318,14 +318,14 @@ Unlock: Effective
 <div class="label">Daily profit</div>
 <div class="value">
 <?php echo number_format($vip['daily_profit'],2); ?>
-<span class="usd">USD</span>
+<span class="usdt">USD</span>
 </div>
 
 
 <div class="label">The total profit</div>
 <div class="value">
 <?php echo number_format($vip['total_profit'],2); ?>
-<span class="usd">USD</span>
+<span class="usdt">USD</span>
 </div>
 
 </div>
