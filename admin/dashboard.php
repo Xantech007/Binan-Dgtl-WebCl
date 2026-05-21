@@ -193,6 +193,10 @@ try {
       <i class="fas fa-crown"></i> Manage VIP
     </a>
 
+    <a href="manage-links.php" class="btn">
+      <i class="fas fa-link"></i> Manage Links
+    </a>
+
     <a href="manage-news.php" class="btn">
       <i class="fas fa-newspaper"></i> Manage News
     </a>
