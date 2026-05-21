@@ -40,77 +40,126 @@ $msg = "";
 
 if($_SERVER['REQUEST_METHOD'] == "POST"){
 
-    $amount = $_POST['amount'];
+    $amount = (float)($_POST['amount'] ?? 0);
 
-    /* ================= PAYSTACK ================= */
+    if($amount <= 0){
+        $msg = "Please select amount.";
+    }else{
 
-    if($method['type'] == "paystack"){
+        /* ================= PAYSTACK ================= */
 
-        $vipStmt = $pdo->prepare("
-            SELECT link 
-            FROM vip 
-            WHERE activation_fee=? 
-            LIMIT 1
-        ");
+        if($method['type'] == "paystack"){
 
-        $vipStmt->execute([$amount]);
+            /* FIND VIP LINK */
+            $vipStmt = $pdo->prepare("
+                SELECT link 
+                FROM vip 
+                WHERE activation_fee=? 
+                LIMIT 1
+            ");
 
-        $vip = $vipStmt->fetch(PDO::FETCH_ASSOC);
+            $vipStmt->execute([$amount]);
 
-        if($vip && !empty($vip['link'])){
+            $vip = $vipStmt->fetch(PDO::FETCH_ASSOC);
 
-            header("Location: " . $vip['link']);
-            exit;
+            /* LOG DEPOSIT FIRST */
+            $depositStmt = $pdo->prepare("
+                INSERT INTO deposits
+                (
+                    user_id,
+                    method_id,
+                    amount,
+                    paid_amount,
+                    paid_currency,
+                    proof,
+                    paystack
+                )
+                VALUES(?,?,?,?,?,?,?)
+            ");
 
-        }else{
-
-            $msg = "Payment link not found.";
-
-        }
-
-    }
-
-    /* ================= NORMAL METHODS ================= */
-
-    else{
-
-        $paid_amount = $_POST['paid_amount'];
-        $paid_currency = $_POST['paid_currency'];
-
-        if(isset($_FILES['proof']) && $_FILES['proof']['error'] == 0){
-
-            $upload_dir = "assets/images/proof/";
-
-            if(!is_dir($upload_dir)){
-                mkdir($upload_dir, 0777, true);
-            }
-
-            $file_name = time() . "_" . basename($_FILES["proof"]["name"]);
-            $target_file = $upload_dir . $file_name;
-
-            move_uploaded_file($_FILES["proof"]["tmp_name"], $target_file);
-
-            $stmt = $pdo->prepare(
-                "INSERT INTO deposits
-                (user_id,method_id,amount,paid_amount,paid_currency,proof)
-                VALUES(?,?,?,?,?,?)"
-            );
-
-            $stmt->execute([
+            $depositStmt->execute([
                 $user_id,
                 $method_id,
                 $amount,
-                $paid_amount,
-                $paid_currency,
-                $target_file
+                $amount,
+                $method['currency'] ?: 'USD',
+                '',
+                'yes'
             ]);
 
-            $_SESSION['recharge_msg'] = "Recharge submitted successfully";
+            if($vip && !empty($vip['link'])){
 
-            header("Location: index.php");
-            exit;
+                header("Location: " . $vip['link']);
+                exit;
+
+            }else{
+
+                $msg = "Payment link not found.";
+
+            }
+
         }
+
+        /* ================= NORMAL METHODS ================= */
+
+        else{
+
+            $paid_amount = $_POST['paid_amount'] ?? 0;
+            $paid_currency = $_POST['paid_currency'] ?? 'USD';
+
+            if(isset($_FILES['proof']) && $_FILES['proof']['error'] == 0){
+
+                $upload_dir = "assets/images/proof/";
+
+                if(!is_dir($upload_dir)){
+                    mkdir($upload_dir, 0777, true);
+                }
+
+                $file_name = time() . "_" . basename($_FILES["proof"]["name"]);
+
+                $target_file = $upload_dir . $file_name;
+
+                move_uploaded_file($_FILES["proof"]["tmp_name"], $target_file);
+
+                $stmt = $pdo->prepare("
+                    INSERT INTO deposits
+                    (
+                        user_id,
+                        method_id,
+                        amount,
+                        paid_amount,
+                        paid_currency,
+                        proof,
+                        paystack
+                    )
+                    VALUES(?,?,?,?,?,?,?)
+                ");
+
+                $stmt->execute([
+                    $user_id,
+                    $method_id,
+                    $amount,
+                    $paid_amount,
+                    $paid_currency,
+                    $target_file,
+                    'no'
+                ]);
+
+                $_SESSION['recharge_msg'] = "Recharge submitted successfully";
+
+                header("Location: index.php");
+                exit;
+
+            }else{
+
+                $msg = "Please upload payment proof.";
+
+            }
+
+        }
+
     }
+
 }
 ?>
 
