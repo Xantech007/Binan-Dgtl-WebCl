@@ -318,14 +318,14 @@ Unlock: Effective
 <div class="label">Daily profit</div>
 <div class="value">
 <?php echo number_format($vip['daily_profit'],2); ?>
-<span class="usdt">USDT</span>
+<span class="usd">USD</span>
 </div>
 
 
 <div class="label">The total profit</div>
 <div class="value">
 <?php echo number_format($vip['total_profit'],2); ?>
-<span class="usdt">USDT</span>
+<span class="usd">USD</span>
 </div>
 
 </div>
@@ -368,7 +368,7 @@ Already Mined
 
 <button onclick="openPopup(<?php echo $vip['id']; ?>)">
 
-<?php echo number_format($vip['activation_fee'],2); ?> USDT
+<?php echo number_format($vip['activation_fee'],2); ?> USD
 
 Unlock now
 
