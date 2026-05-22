@@ -1786,6 +1786,134 @@ font-size:11px;
 
 }
 
+
+/* TEAM DETAILS PAGE */
+
+.team-detail{
+    width:100%;
+    max-width:700px;
+    margin:0 auto;
+    padding:20px 15px 100px;
+}
+
+/* HEADER */
+
+.team-header{
+    display:flex;
+    align-items:center;
+    gap:15px;
+    margin-bottom:25px;
+    padding:15px;
+    border-radius:14px;
+    background:#111827;
+    color:#fff;
+    box-shadow:0 4px 12px rgba(0,0,0,0.15);
+}
+
+.team-header a{
+    width:38px;
+    height:38px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:50%;
+    background:#1f2937;
+    color:#fff;
+    text-decoration:none;
+    font-size:16px;
+    transition:0.3s;
+}
+
+.team-header a:hover{
+    background:#374151;
+}
+
+.team-header span{
+    font-size:18px;
+    font-weight:600;
+}
+
+/* EMPTY STATE */
+
+.team-empty{
+    background:#111827;
+    color:#9ca3af;
+    padding:40px 20px;
+    text-align:center;
+    border-radius:16px;
+    font-size:15px;
+    border:1px solid rgba(255,255,255,0.06);
+}
+
+/* MEMBER CARD */
+
+.team-member{
+    background:#111827;
+    border-radius:16px;
+    padding:18px;
+    margin-bottom:16px;
+    border:1px solid rgba(255,255,255,0.06);
+    transition:0.3s ease;
+    box-shadow:0 4px 10px rgba(0,0,0,0.12);
+}
+
+.team-member:hover{
+    transform:translateY(-2px);
+    border-color:#2563eb;
+}
+
+/* MEMBER EMAIL / PHONE */
+
+.team-member strong{
+    display:block;
+    font-size:16px;
+    color:#fff;
+    word-break:break-word;
+    margin-bottom:10px;
+}
+
+/* INFO */
+
+.member-info{
+    font-size:14px;
+    color:#22c55e;
+    margin-bottom:8px;
+    font-weight:500;
+}
+
+/* DATE */
+
+.member-date{
+    font-size:13px;
+    color:#9ca3af;
+}
+
+/* MOBILE */
+
+@media(max-width:600px){
+
+    .team-detail{
+        padding:15px 12px 90px;
+    }
+
+    .team-header{
+        padding:14px;
+    }
+
+    .team-header span{
+        font-size:16px;
+    }
+
+    .team-member{
+        padding:16px;
+    }
+
+    .team-member strong{
+        font-size:15px;
+    }
+
+}
+
 /* ================= VIP PAGE ================= */
 
 .vip-container{
