@@ -110,9 +110,6 @@ if(empty($error)){
     </div>
 
     <!-- EXTRA DETAILS -->
-    <?php if(!empty($withdrawal['address'])): ?>
-    <p><strong>Withdrawal Address:</strong> <?php echo htmlspecialchars($withdrawal['address']); ?></p>
-    <?php endif; ?>
 
     <?php if(!empty($withdrawal['network_bank'])): ?>
     <p><strong>Bank / Network:</strong> <?php echo htmlspecialchars($withdrawal['network_bank']); ?></p>
