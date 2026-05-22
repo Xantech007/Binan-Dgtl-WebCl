@@ -52,21 +52,25 @@ $referred_by = null;
 /* CHECK INVITE ONLY IF PROVIDED */
 if(!empty($invite)){
 
-$ref=$pdo->prepare("SELECT email,phone FROM users WHERE referral_code=?");
-$ref->execute([$invite]);
-$referrer=$ref->fetch(PDO::FETCH_ASSOC);
+    $ref = $pdo->prepare("
+        SELECT referral_code
+        FROM users
+        WHERE referral_code=?
+    ");
 
-if(!$referrer){
+    $ref->execute([$invite]);
+    $referrer = $ref->fetch(PDO::FETCH_ASSOC);
 
-$msg="Invalid invitation code";
+    if(!$referrer){
 
-}else{
+        $msg = "Invalid invitation code";
 
-$referred_by = !empty($referrer['email'])
-? $referrer['email']
-: $referrer['phone'];
+    }else{
 
-}
+        /* IMPORTANT FIX */
+        $referred_by = $invite;
+
+    }
 
 }
 
