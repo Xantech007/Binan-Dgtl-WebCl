@@ -6,158 +6,211 @@ ini_set('display_errors',1);
 session_start();
 
 if(!isset($_SESSION['user_id'])){
-header("Location: login.php");
-exit;
+    header("Location: login.php");
+    exit;
 }
 
 require_once "config/database.php";
 
 $user_id = $_SESSION['user_id'];
 
-/* Get user referral code */
-$stmt = $pdo->prepare("SELECT referral_code FROM users WHERE id=?");
+/* =========================================================
+   GET USER REFERRAL CODE
+========================================================= */
+
+$stmt = $pdo->prepare("
+SELECT referral_code
+FROM users
+WHERE id=?
+");
+
 $stmt->execute([$user_id]);
+
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 $ref_code = $user['referral_code'];
 
-/* Referral link */
+/* =========================================================
+   REFERRAL LINK
+========================================================= */
+
 $ref_link = "https://".$_SERVER['HTTP_HOST']."/register.php?invite=".$ref_code;
 
+/* =========================================================
+   TEAM STATS
+========================================================= */
 
-/* ================= TEAM STATS ================= */
+/* TEAM SIZE */
 
-/* team size */
-$stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE referred_by=?");
+$stmt = $pdo->prepare("
+SELECT COUNT(*)
+FROM users
+WHERE referred_by=?
+");
+
 $stmt->execute([$ref_code]);
+
 $team_size = $stmt->fetchColumn();
 
-/* team recharge */
-$stmt = $pdo->prepare("SELECT SUM(amount) FROM deposits 
-JOIN users ON deposits.user_id=users.id
-WHERE users.referred_by=? AND deposits.status=1");
+/* TEAM RECHARGE */
+
+$stmt = $pdo->prepare("
+SELECT SUM(deposits.amount)
+FROM deposits
+JOIN users ON deposits.user_id = users.id
+WHERE users.referred_by=?
+AND deposits.status=1
+");
+
 $stmt->execute([$ref_code]);
+
 $team_recharge = $stmt->fetchColumn() ?? 0;
 
-/* team withdraw */
-$stmt = $pdo->prepare("SELECT SUM(amount) FROM withdrawals
-JOIN users ON withdrawals.user_id=users.id
-WHERE users.referred_by=? AND withdrawals.status=1");
+/* TEAM WITHDRAW */
+
+$stmt = $pdo->prepare("
+SELECT SUM(withdrawals.amount)
+FROM withdrawals
+JOIN users ON withdrawals.user_id = users.id
+WHERE users.referred_by=?
+AND withdrawals.status=1
+");
+
 $stmt->execute([$ref_code]);
+
 $team_withdraw = $stmt->fetchColumn() ?? 0;
 
-
-/* ================= LEVEL 1 ================= */
-
-$stmt = $pdo->prepare("SELECT id,referral_code FROM users WHERE referred_by=?");
-$stmt->execute([$ref_code]);
-$level1 = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-$l1_register = count($level1);
-
-$l1_ids = array_column($level1,'id');
-$l1_codes = array_column($level1,'referral_code');
-
-$l1_valid = 0;
-
-if($l1_ids){
-$in = implode(',',array_fill(0,count($l1_ids),'?'));
-
-$stmt = $pdo->prepare("SELECT COUNT(DISTINCT user_id) FROM deposits WHERE status=1 AND user_id IN ($in)");
-$stmt->execute($l1_ids);
-$l1_valid = $stmt->fetchColumn();
-}
-
-
-/* ================= LEVEL 2 ================= */
-
-$l2_register = 0;
-$l2_valid = 0;
-
-if($l1_codes){
-
-$in = implode(',',array_fill(0,count($l1_codes),'?'));
-
-$stmt = $pdo->prepare("SELECT id,referral_code FROM users WHERE referred_by IN ($in)");
-$stmt->execute($l1_codes);
-
-$level2 = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-$l2_register = count($level2);
-
-$l2_ids = array_column($level2,'id');
-$l2_codes = array_column($level2,'referral_code');
-
-if($l2_ids){
-
-$in = implode(',',array_fill(0,count($l2_ids),'?'));
-
-$stmt = $pdo->prepare("SELECT COUNT(DISTINCT user_id) FROM deposits WHERE status=1 AND user_id IN ($in)");
-$stmt->execute($l2_ids);
-$l2_valid = $stmt->fetchColumn();
-
-}
-
-}else{
-$l2_codes=[];
-}
-
-
-/* ================= LEVEL 3 ================= */
-
-$l3_register = 0;
-$l3_valid = 0;
-
-if(!empty($l2_codes)){
-
-$in = implode(',',array_fill(0,count($l2_codes),'?'));
-
-$stmt = $pdo->prepare("SELECT id FROM users WHERE referred_by IN ($in)");
-$stmt->execute($l2_codes);
-
-$level3 = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-$l3_register = count($level3);
-
-$l3_ids = array_column($level3,'id');
-
-if($l3_ids){
-
-$in = implode(',',array_fill(0,count($l3_ids),'?'));
-
-$stmt = $pdo->prepare("SELECT COUNT(DISTINCT user_id) FROM deposits WHERE status=1 AND user_id IN ($in)");
-$stmt->execute($l3_ids);
-$l3_valid = $stmt->fetchColumn();
-
-}
-
-}
-
-
-/* ================= EXTRA STATS ================= */
-
-/* first time recharge */
+/* =========================================================
+   FIRST RECHARGE
+========================================================= */
 
 $stmt = $pdo->prepare("
 SELECT COUNT(DISTINCT users.id)
 FROM users
 JOIN deposits ON users.id = deposits.user_id
-WHERE users.referred_by=? AND deposits.status=1
+WHERE users.referred_by=?
+AND deposits.status=1
 ");
+
 $stmt->execute([$ref_code]);
+
 $first_recharge = $stmt->fetchColumn();
 
-
-/* first withdrawal */
+/* =========================================================
+   FIRST WITHDRAWAL
+========================================================= */
 
 $stmt = $pdo->prepare("
 SELECT COUNT(DISTINCT users.id)
 FROM users
 JOIN withdrawals ON users.id = withdrawals.user_id
-WHERE users.referred_by=? AND withdrawals.status=1
+WHERE users.referred_by=?
+AND withdrawals.status=1
 ");
+
 $stmt->execute([$ref_code]);
+
 $first_withdraw = $stmt->fetchColumn();
+
+/* =========================================================
+   DYNAMIC REFERRAL LEVELS
+========================================================= */
+
+$stmt = $pdo->prepare("
+SELECT *
+FROM referral_levels
+WHERE status=1
+ORDER BY level_no ASC
+");
+
+$stmt->execute();
+
+$referral_levels = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$levels_data = [];
+
+$current_codes = [$ref_code];
+
+foreach($referral_levels as $level){
+
+    $level_no = $level['level_no'];
+
+    $register = 0;
+    $valid = 0;
+    $income = 0;
+
+    $next_codes = [];
+
+    if(!empty($current_codes)){
+
+        $in = implode(',', array_fill(0,count($current_codes),'?'));
+
+        /* GET USERS IN CURRENT LEVEL */
+
+        $stmtUsers = $pdo->prepare("
+        SELECT id, referral_code
+        FROM users
+        WHERE referred_by IN ($in)
+        ");
+
+        $stmtUsers->execute($current_codes);
+
+        $users = $stmtUsers->fetchAll(PDO::FETCH_ASSOC);
+
+        $register = count($users);
+
+        $user_ids = array_column($users,'id');
+
+        $next_codes = array_column($users,'referral_code');
+
+        if($user_ids){
+
+            $in2 = implode(',', array_fill(0,count($user_ids),'?'));
+
+            /* VALID USERS */
+
+            $stmtValid = $pdo->prepare("
+            SELECT COUNT(DISTINCT user_id)
+            FROM deposits
+            WHERE status=1
+            AND user_id IN ($in2)
+            ");
+
+            $stmtValid->execute($user_ids);
+
+            $valid = $stmtValid->fetchColumn();
+
+            /* TOTAL INCOME */
+
+            $stmtIncome = $pdo->prepare("
+            SELECT SUM(amount)
+            FROM referral_commissions
+            WHERE from_user_id IN ($in2)
+            AND level=?
+            AND user_id=?
+            ");
+
+            $params = array_merge($user_ids, [$level_no, $user_id]);
+
+            $stmtIncome->execute($params);
+
+            $income = $stmtIncome->fetchColumn() ?? 0;
+
+        }
+
+    }
+
+    $levels_data[] = [
+        'level_no' => $level_no,
+        'register' => $register,
+        'valid' => $valid,
+        'income' => $income,
+        'commission' => $level['commission_percent']
+    ];
+
+    $current_codes = $next_codes;
+
+}
 
 ?>
 
@@ -167,235 +220,211 @@ $first_withdraw = $stmt->fetchColumn();
 <div class="team-container">
 
 
-<!-- REFERRAL BOX -->
+<!-- =========================================================
+     REFERRAL BOX
+========================================================= -->
 
 <div class="ref-box">
 
-<div class="ref-code">
+    <div class="ref-code">
 
-<span>Invitation code:</span>
+        <span>Invitation code:</span>
 
-<strong><?php echo $ref_code; ?></strong>
+        <strong><?php echo $ref_code; ?></strong>
 
-<button onclick="copyCode()">Copy</button>
+        <button onclick="copyCode()">Copy</button>
+
+    </div>
+
+    <div class="ref-link">
+
+        <p>Share your referral link and start earning</p>
+
+        <input
+        type="text"
+        value="<?php echo $ref_link; ?>"
+        id="refLink"
+        readonly>
+
+        <button onclick="copyLink()">Copy</button>
+
+    </div>
+
+    <!-- SOCIAL ICONS -->
+
+    <div class="social-icons">
+
+        <i class="fa-brands fa-x-twitter"></i>
+        <i class="fa-brands fa-facebook-f"></i>
+        <i class="fa-brands fa-telegram"></i>
+        <i class="fa-brands fa-linkedin-in"></i>
+        <i class="fa-brands fa-whatsapp"></i>
+        <i class="fa-brands fa-instagram"></i>
+        <i class="fa-brands fa-tiktok"></i>
+        <i class="fa-solid fa-share-nodes"></i>
+
+    </div>
 
 </div>
 
-<div class="ref-link">
 
-<p>Share your referral link and start earning</p>
-
-<input type="text" value="<?php echo $ref_link; ?>" id="refLink" readonly>
-
-<button onclick="copyLink()">Copy</button>
-
-</div>
-
-
-<!-- SOCIAL ICONS -->
-
-<div class="social-icons">
-
-<i class="fa-brands fa-x-twitter"></i>
-<i class="fa-brands fa-facebook-f"></i>
-<i class="fa-brands fa-telegram"></i>
-<i class="fa-brands fa-linkedin-in"></i>
-<i class="fa-brands fa-whatsapp"></i>
-<i class="fa-brands fa-instagram"></i>
-<i class="fa-brands fa-tiktok"></i>
-<i class="fa-solid fa-share-nodes"></i>
-
-</div>
-
-</div>
-
-
-
-<!-- TEAM STATS -->
+<!-- =========================================================
+     TEAM STATS
+========================================================= -->
 
 <div class="team-stats">
 
-<div>
-<span>Team size</span>
-<strong><?php echo $team_size; ?></strong>
-</div>
+    <div>
+        <span>Team size</span>
+        <strong><?php echo $team_size; ?></strong>
+    </div>
 
-<div>
-<span>Team recharge</span>
-<strong>$<?php echo number_format($team_recharge,2); ?></strong>
-</div>
+    <div>
+        <span>Team recharge</span>
+        <strong>$<?php echo number_format($team_recharge,2); ?></strong>
+    </div>
 
-<div>
-<span>Team Withdrawal</span>
-<strong>$<?php echo number_format($team_withdraw,2); ?></strong>
-</div>
+    <div>
+        <span>Team Withdrawal</span>
+        <strong>$<?php echo number_format($team_withdraw,2); ?></strong>
+    </div>
 
-<div>
-<span>New team</span>
-<strong><?php echo $team_size; ?></strong>
-</div>
+    <div>
+        <span>New team</span>
+        <strong><?php echo $team_size; ?></strong>
+    </div>
 
-<div>
-<span>First time recharge</span>
-<strong><?php echo $first_recharge; ?></strong>
-</div>
+    <div>
+        <span>First time recharge</span>
+        <strong><?php echo $first_recharge; ?></strong>
+    </div>
 
-<div>
-<span>First withdrawal</span>
-<strong><?php echo $first_withdraw; ?></strong>
-</div>
-
-</div>
-
-
-
-<!-- LEVEL 1 -->
-
-<div class="team-level level1">
-
-<div class="level-badge">
-<img src="assets/images/medal.png">
-<span>LEVEL 1</span>
-</div>
-
-<div class="level-panel">
-
-<div class="level-stats">
-
-<div>
-<p>Register/Valid</p>
-<strong><?php echo $l1_register.'/'.$l1_valid; ?></strong>
-</div>
-
-<div>
-<p>Total Income</p>
-<strong>0</strong>
-</div>
-
-</div>
-
-<div class="level-commission">
-<p>Commission Percentage</p>
-<strong>16%</strong>
-</div>
-
-</div>
-
-<a href="team/1.php" class="detail-btn">Details</a>
+    <div>
+        <span>First withdrawal</span>
+        <strong><?php echo $first_withdraw; ?></strong>
+    </div>
 
 </div>
 
 
+<!-- =========================================================
+     DYNAMIC LEVELS
+========================================================= -->
 
-<!-- LEVEL 2 -->
+<?php foreach($levels_data as $level): ?>
 
-<div class="team-level level2">
+<div class="team-level level<?php echo $level['level_no']; ?>">
 
-<div class="level-badge">
-<img src="assets/images/medal.png">
-<span>LEVEL 2</span>
-</div>
+    <div class="level-badge">
 
-<div class="level-panel">
+        <img src="assets/images/medal.png">
 
-<div class="level-stats">
+        <span>
+            LEVEL <?php echo $level['level_no']; ?>
+        </span>
 
-<div>
-<p>Register/Valid</p>
-<strong><?php echo $l2_register.'/'.$l2_valid; ?></strong>
-</div>
+    </div>
 
-<div>
-<p>Total Income</p>
-<strong>0</strong>
-</div>
+    <div class="level-panel">
 
-</div>
+        <div class="level-stats">
 
-<div class="level-commission">
-<p>Commission Percentage</p>
-<strong>3%</strong>
-</div>
+            <div>
 
-</div>
+                <p>Register/Valid</p>
 
-<a href="team/2.php" class="detail-btn">Details</a>
+                <strong>
+                    <?php
+                    echo $level['register'].'/'.$level['valid'];
+                    ?>
+                </strong>
 
-</div>
+            </div>
 
+            <div>
 
+                <p>Total Income</p>
 
-<!-- LEVEL 3 -->
+                <strong>
+                    $<?php echo number_format($level['income'],2); ?>
+                </strong>
 
-<div class="team-level level3">
+            </div>
 
-<div class="level-badge">
-<img src="assets/images/medal.png">
-<span>LEVEL 3</span>
-</div>
+        </div>
 
-<div class="level-panel">
+        <div class="level-commission">
 
-<div class="level-stats">
+            <p>Commission Percentage</p>
 
-<div>
-<p>Register/Valid</p>
-<strong><?php echo $l3_register.'/'.$l3_valid; ?></strong>
-</div>
+            <strong>
+                <?php echo $level['commission']; ?>%
+            </strong>
 
-<div>
-<p>Total Income</p>
-<strong>0</strong>
-</div>
+        </div>
 
-</div>
+    </div>
 
-<div class="level-commission">
-<p>Commission Percentage</p>
-<strong>1%</strong>
-</div>
+    <a
+    href="team/<?php echo $level['level_no']; ?>.php"
+    class="detail-btn">
+        Details
+    </a>
 
 </div>
 
-<a href="team/3.php" class="detail-btn">Details</a>
+<?php endforeach; ?>
+
 
 </div>
 
 
 <script>
 
-/* COPY FUNCTIONS */
+/* =========================================================
+   COPY CODE
+========================================================= */
 
 function copyCode(){
 
-navigator.clipboard.writeText("<?php echo $ref_code;?>");
+    navigator.clipboard.writeText(
+        "<?php echo $ref_code; ?>"
+    );
 
-alert("Code copied");
+    alert("Code copied");
 
 }
+
+/* =========================================================
+   COPY LINK
+========================================================= */
 
 function copyLink(){
 
-var link=document.getElementById("refLink");
+    var link = document.getElementById("refLink");
 
-navigator.clipboard.writeText(link.value);
+    navigator.clipboard.writeText(link.value);
 
-alert("Link copied");
+    alert("Link copied");
 
 }
 
-/* SOCIAL ICON ANIMATION */
+/* =========================================================
+   SOCIAL ICON ANIMATION
+========================================================= */
 
 window.addEventListener("load",function(){
 
-document.querySelectorAll(".social-icons i")
-.forEach((icon,index)=>{
+    document.querySelectorAll(".social-icons i")
+    .forEach((icon,index)=>{
 
-setTimeout(()=>{
-icon.classList.add("show");
-},index*120);
+        setTimeout(()=>{
 
-});
+            icon.classList.add("show");
+
+        },index*120);
+
+    });
 
 });
 
