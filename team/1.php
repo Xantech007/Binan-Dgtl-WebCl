@@ -30,6 +30,8 @@ $members = $stmt->fetchAll(PDO::FETCH_ASSOC);
 include "../inc/header.php";
 ?>
 
+<link rel="stylesheet" href="assets/css/team-detail.css">
+
 <div class="team-detail">
 
 <div class="team-header">
