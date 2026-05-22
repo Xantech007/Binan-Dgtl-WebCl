@@ -66,13 +66,90 @@ if(isset($_POST['claim_vip'])){
             $profit = $claimable_days * $vip['daily_profit'];
 
             /* ADD USER BALANCE */
-
             $pdo->prepare("
             UPDATE users
             SET balance = balance + ?
             WHERE id = ?
             ")->execute([$profit,$user_id]);
-
+            
+            /* =========================================================
+               REFERRAL COMMISSION DISTRIBUTION (LEVEL 1–3 ONLY)
+            ========================================================= */
+            
+            $max_levels = 3;
+            
+            $current_user = $user_id;
+            
+            /* GET DIRECT REFERRER */
+            $stmt = $pdo->prepare("
+            SELECT referred_by
+            FROM users
+            WHERE id=?
+            ");
+            $stmt->execute([$current_user]);
+            $ref = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            $parent_code = $ref['referred_by'] ?? null;
+            
+            for($level = 1; $level <= $max_levels; $level++){
+            
+                if(empty($parent_code)) break;
+            
+                /* GET PARENT USER */
+                $stmt = $pdo->prepare("
+                    SELECT id, referred_by
+                    FROM users
+                    WHERE referral_code=?
+                ");
+                $stmt->execute([$parent_code]);
+                $parent = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+                if(!$parent) break;
+            
+                /* GET COMMISSION PERCENT */
+                $stmt = $pdo->prepare("
+                    SELECT commission_percent
+                    FROM referral_levels
+                    WHERE level_no=?
+                    AND status=1
+                ");
+                $stmt->execute([$level]);
+                $percent = $stmt->fetchColumn();
+            
+                if(!$percent){
+                    $percent = 0;
+                }
+            
+                $commission = ($profit * $percent) / 100;
+            
+                if($commission > 0){
+            
+                    /* CREDIT PARENT BALANCE */
+                    $pdo->prepare("
+                    UPDATE users
+                    SET balance = balance + ?
+                    WHERE id = ?
+                    ")->execute([$commission, $parent['id']]);
+            
+                    /* LOG COMMISSION */
+                    $pdo->prepare("
+                    INSERT INTO referral_commissions
+                    (user_id, from_user_id, level, amount, source)
+                    VALUES (?,?,?,?,?)
+                    ")->execute([
+                        $parent['id'],
+                        $user_id,
+                        $level,
+                        $commission,
+                        'vip'
+                    ]);
+            
+                }
+            
+                /* MOVE UP TREE */
+                $parent_code = $parent['referred_by'];
+            
+            }
 
             /* UPDATE CLAIMED DAYS */
 
