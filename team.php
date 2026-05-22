@@ -276,7 +276,7 @@ $first_withdraw = $stmt->fetchColumn();
 
 <div class="level-commission">
 <p>Commission Percentage</p>
-<strong>5%</strong>
+<strong>16%</strong>
 </div>
 
 </div>
@@ -314,7 +314,7 @@ $first_withdraw = $stmt->fetchColumn();
 
 <div class="level-commission">
 <p>Commission Percentage</p>
-<strong>12%</strong>
+<strong>3%</strong>
 </div>
 
 </div>
@@ -352,7 +352,7 @@ $first_withdraw = $stmt->fetchColumn();
 
 <div class="level-commission">
 <p>Commission Percentage</p>
-<strong>25%</strong>
+<strong>1%</strong>
 </div>
 
 </div>
