@@ -5,27 +5,27 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 <div class="footer-wrapper">
     <div class="footer">
 
-        <a href="index.php" class="<?php if($currentPage=='/../index.php') echo 'active'; ?>">
+        <a href="index.php" class="<?php if($currentPage=='/../../index.php') echo 'active'; ?>">
             <i class="fa-solid fa-house"></i>
             <span>Home</span>
         </a>
 
-        <a href="mission.php" class="<?php if($currentPage=='/../mission.php') echo 'active'; ?>">
+        <a href="mission.php" class="<?php if($currentPage=='/../../mission.php') echo 'active'; ?>">
             <i class="fa-solid fa-list-check"></i>
             <span>Task</span>
         </a>
 
-        <a href="team.php" class="<?php if($currentPage=='/../team.php') echo 'active'; ?>">
+        <a href="team.php" class="<?php if($currentPage=='/../../team.php') echo 'active'; ?>">
             <i class="fa-solid fa-people-group"></i>
             <span>Team</span>
         </a>
 
-        <a href="vip.php" class="<?php if($currentPage=='/../vip.php') echo 'active'; ?>">
+        <a href="vip.php" class="<?php if($currentPage=='/../../vip.php') echo 'active'; ?>">
             <i class="fa-solid fa-crown"></i>
             <span>VIP</span>
         </a>
 
-        <a href="mine.php" class="<?php if($currentPage=='/../mine.php') echo 'active'; ?>">
+        <a href="mine.php" class="<?php if($currentPage=='/../../mine.php') echo 'active'; ?>">
             <i class="fa-solid fa-user"></i>
             <span>Me</span>
         </a>
