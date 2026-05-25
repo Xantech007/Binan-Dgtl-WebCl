@@ -10,7 +10,9 @@ require_once "../config/database.php";
 
 $user_id = $_SESSION['user_id'];
 
-/* ================= REFERRAL CODE ================= */
+/* =========================================================
+   GET USER REFERRAL CODE
+========================================================= */
 
 $stmt = $pdo->prepare("
 SELECT referral_code
@@ -18,65 +20,161 @@ FROM users
 WHERE id=?
 ");
 $stmt->execute([$user_id]);
+
 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
 $my_code = $user['referral_code'];
 
-/* ================= LEVEL 1 USERS ================= */
+/* =========================================================
+   FETCH LEVEL 1 MEMBERS
+========================================================= */
 
 $stmt = $pdo->prepare("
-SELECT id, email, phone, vip_level, balance, created_at
+SELECT
+    id,
+    email,
+    phone,
+    vip_level,
+    balance,
+    created_at
 FROM users
 WHERE referred_by=?
 ORDER BY id DESC
 ");
+
 $stmt->execute([$my_code]);
 
 $members = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-/* ================= ENRICH DATA ================= */
+/* =========================================================
+   TEAM ANALYTICS
+========================================================= */
 
 $rows = [];
 
 $total_users = count($members);
+
 $total_balance = 0;
-$total_withdrawals = 0;
 $total_deposits = 0;
+$total_withdrawals = 0;
+$total_generated = 0;
 
 foreach($members as $m){
 
-    $user_id_row = $m['id'];
+    $member_id = $m['id'];
 
-    /* DEPOSITS */
+    /*
+    |--------------------------------------------------------------------------
+    | TOTAL DEPOSITS
+    |--------------------------------------------------------------------------
+    */
+
     $stmt = $pdo->prepare("
-        SELECT SUM(amount)
-        FROM deposits
-        WHERE user_id=? AND status=1
+    SELECT SUM(amount)
+    FROM deposits
+    WHERE user_id=?
+    AND status=1
     ");
-    $stmt->execute([$user_id_row]);
+
+    $stmt->execute([$member_id]);
+
     $deposits = $stmt->fetchColumn() ?? 0;
 
-    /* WITHDRAWALS */
+    /*
+    |--------------------------------------------------------------------------
+    | TOTAL WITHDRAWALS
+    |--------------------------------------------------------------------------
+    */
+
     $stmt = $pdo->prepare("
-        SELECT SUM(amount)
-        FROM withdrawals
-        WHERE user_id=? AND status=1
+    SELECT SUM(amount)
+    FROM withdrawals
+    WHERE user_id=?
+    AND status=1
     ");
-    $stmt->execute([$user_id_row]);
+
+    $stmt->execute([$member_id]);
+
     $withdrawals = $stmt->fetchColumn() ?? 0;
 
-    /* TOTAL GENERATED */
-    $generated = $deposits - $withdrawals;
+    /*
+    |--------------------------------------------------------------------------
+    | TOTAL GENERATED FOR YOU
+    |--------------------------------------------------------------------------
+    */
+
+    $stmt = $pdo->prepare("
+    SELECT SUM(amount)
+    FROM referral_commissions
+    WHERE user_id=?
+    AND from_user_id=?
+    ");
+
+    $stmt->execute([
+        $user_id,
+        $member_id
+    ]);
+
+    $generated = $stmt->fetchColumn() ?? 0;
+
+    /*
+    |--------------------------------------------------------------------------
+    | TOTAL VIP CLAIMS
+    |--------------------------------------------------------------------------
+    */
+
+    $stmt = $pdo->prepare("
+    SELECT COUNT(*)
+    FROM vip_claims
+    WHERE user_id=?
+    ");
+
+    $stmt->execute([$member_id]);
+
+    $vip_claims = $stmt->fetchColumn();
+
+    /*
+    |--------------------------------------------------------------------------
+    | LAST VIP ACTIVITY
+    |--------------------------------------------------------------------------
+    */
+
+    $stmt = $pdo->prepare("
+    SELECT claimed_at
+    FROM vip_claims
+    WHERE user_id=?
+    ORDER BY id DESC
+    LIMIT 1
+    ");
+
+    $stmt->execute([$member_id]);
+
+    $last_claim = $stmt->fetchColumn();
+
+    /*
+    |--------------------------------------------------------------------------
+    | SUMMARY TOTALS
+    |--------------------------------------------------------------------------
+    */
 
     $total_balance += $m['balance'];
     $total_deposits += $deposits;
     $total_withdrawals += $withdrawals;
+    $total_generated += $generated;
+
+    /*
+    |--------------------------------------------------------------------------
+    | STORE ROW
+    |--------------------------------------------------------------------------
+    */
 
     $rows[] = [
         'user' => $m,
         'deposits' => $deposits,
         'withdrawals' => $withdrawals,
-        'generated' => $generated
+        'generated' => $generated,
+        'vip_claims' => $vip_claims,
+        'last_claim' => $last_claim
     ];
 }
 
@@ -84,150 +182,280 @@ include "../inc/header.php";
 ?>
 
 <style>
-.team-wrap{
+
+.team-page{
     padding:20px;
     color:#fff;
 }
 
-.summary{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:10px;
+.team-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
     margin-bottom:20px;
 }
 
-.summary div{
-    background:#1b1d24;
-    padding:12px;
-    border-radius:10px;
-    text-align:center;
+.team-top a{
+    color:#fff;
+    text-decoration:none;
+    font-size:14px;
+}
+
+.team-title{
+    font-size:22px;
+    font-weight:bold;
+}
+
+.summary-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:12px;
+    margin-bottom:20px;
+}
+
+.summary-card{
+    background:#181b22;
+    border-radius:12px;
+    padding:15px;
+}
+
+.summary-card span{
+    display:block;
+    color:#aaa;
+    font-size:13px;
+    margin-bottom:8px;
+}
+
+.summary-card strong{
+    font-size:18px;
+    color:#f0b24b;
+}
+
+.table-wrap{
+    overflow-x:auto;
 }
 
 table{
     width:100%;
     border-collapse:collapse;
     background:#14161c;
-    border-radius:10px;
+    border-radius:12px;
     overflow:hidden;
 }
 
-th,td{
-    padding:12px;
-    border-bottom:1px solid #222;
+th{
+    background:#1e222b;
+    color:#f0b24b;
+    padding:14px;
+    font-size:14px;
     text-align:left;
+}
+
+td{
+    padding:14px;
+    border-bottom:1px solid #222;
     font-size:14px;
 }
 
-th{
-    background:#1f222b;
-    color:#f0b24b;
+tr:last-child td{
+    border-bottom:none;
 }
 
-.badge{
-    padding:4px 8px;
-    background:#2d2f3a;
+.vip-badge{
+    background:#2d3140;
+    padding:5px 10px;
     border-radius:6px;
     font-size:12px;
+    display:inline-block;
 }
+
+.empty-box{
+    background:#181b22;
+    padding:30px;
+    border-radius:12px;
+    text-align:center;
+    color:#999;
+}
+
+.user-name{
+    font-weight:bold;
+    color:#fff;
+}
+
+.small-text{
+    font-size:12px;
+    color:#888;
+    margin-top:5px;
+}
+
 </style>
 
-<div class="team-wrap">
+<div class="team-page">
 
-<!-- HEADER -->
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
-    <a href="../team.php" style="color:#fff;text-decoration:none;">← Back</a>
-    <h3>Level 1 Team</h3>
-</div>
+    <!-- HEADER -->
 
-<!-- SUMMARY -->
-<div class="summary">
+    <div class="team-top">
 
-    <div>
-        <h4><?php echo $total_users; ?></h4>
-        <p>Total Users</p>
+        <a href="../team.php">
+            ← Back
+        </a>
+
+        <div class="team-title">
+            Level 1 Team
+        </div>
+
     </div>
 
-    <div>
-        <h4>$<?php echo number_format($total_deposits,2); ?></h4>
-        <p>Total Deposits</p>
+    <!-- SUMMARY -->
+
+    <div class="summary-grid">
+
+        <div class="summary-card">
+            <span>Total Members</span>
+            <strong><?php echo $total_users; ?></strong>
+        </div>
+
+        <div class="summary-card">
+            <span>Total Deposits</span>
+            <strong>$<?php echo number_format($total_deposits,2); ?></strong>
+        </div>
+
+        <div class="summary-card">
+            <span>Total Withdrawals</span>
+            <strong>$<?php echo number_format($total_withdrawals,2); ?></strong>
+        </div>
+
+        <div class="summary-card">
+            <span>Total Generated</span>
+            <strong>$<?php echo number_format($total_generated,2); ?></strong>
+        </div>
+
+        <div class="summary-card">
+            <span>Total Balance</span>
+            <strong>$<?php echo number_format($total_balance,2); ?></strong>
+        </div>
+
     </div>
 
-    <div>
-        <h4>$<?php echo number_format($total_withdrawals,2); ?></h4>
-        <p>Total Withdrawals</p>
+    <!-- TABLE -->
+
+    <div class="table-wrap">
+
+        <table>
+
+            <tr>
+                <th>User</th>
+                <th>VIP</th>
+                <th>Deposits</th>
+                <th>Withdrawals</th>
+                <th>Generated</th>
+                <th>VIP Claims</th>
+                <th>Balance</th>
+                <th>Last Activity</th>
+                <th>Joined</th>
+            </tr>
+
+            <?php if(!$rows): ?>
+
+            <tr>
+
+                <td colspan="9">
+
+                    <div class="empty-box">
+                        No referrals yet
+                    </div>
+
+                </td>
+
+            </tr>
+
+            <?php else: ?>
+
+            <?php foreach($rows as $r):
+
+                $u = $r['user'];
+
+            ?>
+
+            <tr>
+
+                <td>
+
+                    <div class="user-name">
+                        <?php
+                        echo htmlspecialchars(
+                            $u['email'] ?: $u['phone']
+                        );
+                        ?>
+                    </div>
+
+                </td>
+
+                <td>
+
+                    <span class="vip-badge">
+                        VIP<?php echo (int)$u['vip_level']; ?>
+                    </span>
+
+                </td>
+
+                <td>
+                    $<?php echo number_format($r['deposits'],2); ?>
+                </td>
+
+                <td>
+                    $<?php echo number_format($r['withdrawals'],2); ?>
+                </td>
+
+                <td>
+                    $<?php echo number_format($r['generated'],2); ?>
+                </td>
+
+                <td>
+                    <?php echo $r['vip_claims']; ?>
+                </td>
+
+                <td>
+                    $<?php echo number_format($u['balance'],2); ?>
+                </td>
+
+                <td>
+
+                    <?php
+                    if($r['last_claim']){
+
+                        echo date(
+                            "d M Y H:i",
+                            strtotime($r['last_claim'])
+                        );
+
+                    }else{
+
+                        echo "No activity";
+
+                    }
+                    ?>
+
+                </td>
+
+                <td>
+                    <?php
+                    echo date(
+                        "d M Y",
+                        strtotime($u['created_at'])
+                    );
+                    ?>
+                </td>
+
+            </tr>
+
+            <?php endforeach; ?>
+
+            <?php endif; ?>
+
+        </table>
+
     </div>
-
-    <div>
-        <h4>$<?php echo number_format($total_balance,2); ?></h4>
-        <p>Total Balance</p>
-    </div>
-
-</div>
-
-<!-- TABLE -->
-<table>
-
-<tr>
-    <th>User</th>
-    <th>VIP</th>
-    <th>Deposits</th>
-    <th>Withdrawals</th>
-    <th>Net Generated</th>
-    <th>Balance</th>
-    <th>Joined</th>
-</tr>
-
-<?php if(!$rows): ?>
-
-<tr>
-    <td colspan="7" style="text-align:center;">No referrals yet</td>
-</tr>
-
-<?php else: ?>
-
-<?php foreach($rows as $r): 
-    $u = $r['user'];
-?>
-
-<tr>
-
-    <td>
-        <?php echo htmlspecialchars($u['email'] ?: $u['phone']); ?>
-    </td>
-
-    <td>
-        <span class="badge">
-            VIP<?php echo (int)$u['vip_level']; ?>
-        </span>
-    </td>
-
-    <td>
-        $<?php echo number_format($r['deposits'],2); ?>
-    </td>
-
-    <td>
-        $<?php echo number_format($r['withdrawals'],2); ?>
-    </td>
-
-    <td>
-        $<?php echo number_format($r['generated'],2); ?>
-    </td>
-
-    <td>
-        $<?php echo number_format($u['balance'],2); ?>
-    </td>
-
-    <td>
-        <?php echo date("d M Y",strtotime($u['created_at'])); ?>
-    </td>
-
-</tr>
-
-<?php endforeach; ?>
-
-<?php endif; ?>
-
-</table>
 
 </div>
 
