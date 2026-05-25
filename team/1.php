@@ -459,4 +459,4 @@ tr:last-child td{
 
 </div>
 
-<?php include "../inc/footer.php"; ?>
+<?php include "inc/team-footer.php"; ?>
